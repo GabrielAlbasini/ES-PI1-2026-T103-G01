@@ -74,7 +74,7 @@ CREATE DATABASE MySQL;
 
 ```bash
 git clone https://github.com/GabrielAlbasini/ES-PI1-2026-T103-G01
-cd <ES-PI1-2026-T103-G01>
+cd ES-PI1-2026-T103-G01
 ```
 
 2. Execute o arquivo principal:
