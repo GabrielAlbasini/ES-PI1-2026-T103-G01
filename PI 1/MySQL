@@ -1,0 +1,72 @@
+CREATE DATABASE sistema_votacao;
+USE sistema_votacao;
+
+CREATE TABLE eleitor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome_completo VARCHAR(150) NOT NULL,
+    cpf VARCHAR(50) NOT NULL UNIQUE, -- armazenado criptografado
+    titulo_eleitor VARCHAR(20) NOT NULL UNIQUE,
+    mesario BOOLEAN NOT NULL,
+    chave_acesso VARCHAR(50) NOT NULL, -- criptografada
+    status_voto ENUM('NAO_VOTOU', 'JA_VOTOU') DEFAULT 'NAO_VOTOU'
+);
+
+CREATE TABLE candidato (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    numero INT NOT NULL UNIQUE,
+    partido VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE voto (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_candidato INT,
+    data_hora DATETIME NOT NULL,
+    protocolo VARCHAR(50) NOT NULL, -- criptografado
+    FOREIGN KEY (id_candidato) REFERENCES candidato(id)
+);
+
+CREATE TABLE log_ocorrencias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    data_hora DATETIME NOT NULL,
+    descricao TEXT NOT NULL
+);
+
+INSERT INTO eleitor (nome_completo, cpf, titulo_eleitor, mesario, chave_acesso)
+VALUES 
+('Gabriel Albasini', 'A1B2C3D4', '123456789012', TRUE, 'X9K21'),
+('Carlos Eduardo', 'E5F6G7H8', '987654321098', FALSE, 'L8M32'),
+('Bruno Lobo', 'I9J0K1L2', '456789123456', FALSE, 'P4Q88');
+
+INSERT INTO candidato (nome, numero, partido)
+VALUES
+('Leonardo Fonseca', 10, 'ABC'),
+('Lua Pereira', 20, 'XYZ'),
+('Cadu Spadari', 30, 'DEF');
+
+INSERT INTO voto (id_candidato, data_hora, protocolo)
+VALUES
+(1, NOW(), 'K3P99Z1082LA'),
+(2, NOW(), 'J8H22K9912AB');
+
+INSERT INTO log_ocorrencias (data_hora, descricao)
+VALUES
+(NOW(), 'ABERTURA: Votação iniciada com sucesso'),
+(NOW(), 'SUCESSO: Voto realizado com sucesso'),
+(NOW(), 'ENCERRAMENTO: Votação finalizada com sucesso');
+
+SELECT * FROM eleitor;
+
+SELECT nome_completo FROM eleitor WHERE status_voto = 'JA_VOTOU';
+
+SELECT c.nome, COUNT(v.id) AS total_votos
+FROM candidato c
+LEFT JOIN voto v ON c.id = v.id_candidato
+GROUP BY c.nome;
+
+SELECT c.nome, COUNT(v.id) AS votos
+FROM candidato c
+JOIN voto v ON c.id = v.id_candidato
+GROUP BY c.nome
+ORDER BY votos DESC
+LIMIT 1;
