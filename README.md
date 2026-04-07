@@ -22,7 +22,7 @@ O sistema é executado via terminal (linha de comando), sem interface gráfica, 
 | Nome | GitHub |
 |------|--------|
 | *Bruno Lobo de Jesus* | *brunolobo-jesus* |
-| *Cadu Martinez Spadari* | ** |
+| *Cadu Martinez Spadari* | *Cadzss* |
 | *Carlos Eduardo Marins Fonseca* | *Cadu-Marins* |
 | *Gabriel Figueira Albasini* | *GabrielAlbasini* |
 | *Leonardo Fonseca de Oliveira* | *leo-fonseca-oliveira* |
@@ -63,7 +63,7 @@ pip install mysql-connector-python
 1. Acesse o MySQL e crie o banco de dados do projeto:
 
 ```sql
-CREATE DATABASE MySQL;
+CREATE DATABASE sistema_votacao;
 ```
 
 2. Configure as credenciais de conexão no arquivo de configuração do projeto (host, usuário, senha e nome do banco).
