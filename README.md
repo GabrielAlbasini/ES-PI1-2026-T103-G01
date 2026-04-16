@@ -26,7 +26,7 @@ O sistema é executado via terminal (linha de comando), sem interface gráfica, 
 | *Carlos Eduardo Marins Fonseca* | *Cadu-Marins* |
 | *Gabriel Figueira Albasini* | *GabrielAlbasini* |
 | *Leonardo Fonseca de Oliveira* | *leo-fonseca-oliveira* |
-
+| *Matheus Ferreira Lopes Lau* | *MatheusPUCC* |
 
 
 ---
