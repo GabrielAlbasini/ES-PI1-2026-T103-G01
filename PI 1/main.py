@@ -179,6 +179,53 @@ def main():
         else:
             print("Opção inválida.")
 
+def cadastrar_eleitor():
+    print("\n--- CADASTRO DE ELEITOR ---")
+    
+    nome = input("Digite o nome: ").strip()
+    titulo = input("Digite o título de eleitor: ").strip()
+    cpf = input("Digite o CPF: ").strip()
+    mesario = input("É mesário? (s/n): ").strip().lower()
+    chave = input("Digite a chave de acesso: ").strip()
 
+    if not nome or not titulo or not cpf or not chave:
+        print("Erro: Todos os campos são obrigatórios!")
+        return
+
+    mesario_bool = True if mesario == "s" else False
+
+    try:
+        sql = """
+        INSERT INTO eleitor 
+        (nome_completo, cpf, titulo_eleitor, mesario, chave_acesso)
+        VALUES (%s, %s, %s, %s, %s)
+        """
+
+        valores = (nome, cpf, titulo, mesario_bool, chave)
+
+        cursor.execute(sql, valores)
+        conn.commit()
+
+        print("Eleitor cadastrado com sucesso!")
+
+    except mysql.connector.Error as err:
+        print("Erro ao cadastrar:", err)
+
+def buscar_eleitor():
+    print("\n--- BUSCAR ELEITOR ---")
+
+    titulo = input("Digite o título do eleitor: ").strip()
+
+    cursor.execute("SELECT * FROM eleitor WHERE titulo_eleitor = %s", (titulo,))
+    eleitor = cursor.fetchone()
+
+    if eleitor:
+        print("\nEleitor encontrado:")
+        print(f"Nome: {eleitor['nome_completo']}")
+        print(f"Título: {eleitor['titulo_eleitor']}")
+        print(f"CPF: {eleitor['cpf']}")
+        print(f"Status: {eleitor['status_voto']}")
+    else:
+        print("Eleitor não encontrado.")
 if __name__ == "__main__":
     main() 
