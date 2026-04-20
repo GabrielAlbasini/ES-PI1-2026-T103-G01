@@ -229,3 +229,89 @@ def buscar_eleitor():
         print("Eleitor não encontrado.")
 if __name__ == "__main__":
     main() 
+
+
+def listar_eleitores():
+    print("\n--- LISTA DE ELEITORES ---")
+
+    try:
+        cursor.execute("SELECT * FROM eleitor")
+        eleitores = cursor.fetchall()
+
+        if eleitores:
+            for e in eleitores:
+                print("\n----------")
+                print(f"Nome: {e['nome_completo']}")
+                print(f"Título: {e['titulo_eleitor']}")
+                print(f"CPF: {e['cpf']}")
+                print(f"Mesário: {'Sim' if e['mesario'] else 'Não'}")
+                print(f"Status: {e['status_voto']}")
+        else:
+            print("Nenhum eleitor cadastrado.")
+
+    except mysql.connector.Error as err:
+        print("Erro ao listar:", err)
+
+
+def editar_eleitor():
+    print("\n- EDITAR ELEITOR -")
+
+    titulo = input("Digite o título do eleitor que deseja editar: ").strip()
+
+    try:
+        cursor.execute("SELECT * FROM eleitor WHERE titulo_eleitor = %s", (titulo,))
+        eleitor = cursor.fetchone()
+
+        if not eleitor:
+            print("Eleitor não encontrado.")
+            return
+
+        print("\n")
+
+        novo_nome = input(f"Nome ({eleitor['nome_completo']}): ").strip()
+        novo_cpf = input(f"CPF ({eleitor['cpf']}): ").strip()
+        novo_mesario = input("É mesário? (s/n): ").strip().lower()
+
+        nome = novo_nome if novo_nome else eleitor['nome_completo']
+        cpf = novo_cpf if novo_cpf else eleitor['cpf']
+        mesario = eleitor['mesario'] if novo_mesario == "" else (novo_mesario == 's')
+
+        sql = """
+        UPDATE eleitor
+        SET nome_completo = %s, cpf = %s, mesario = %s
+        WHERE titulo_eleitor = %s
+        """
+
+        cursor.execute(sql, (nome, cpf, mesario, titulo))
+        conn.commit()
+
+        print("Eleitor atualizado com sucesso!")
+
+    except mysql.connector.Error as err:
+        print("Erro ao editar:", err)
+
+
+def remover_eleitor():
+    print("\n--- REMOVER ELEITOR ---")
+
+    titulo = input("Digite o título do eleitor: ").strip()
+
+    try:
+        cursor.execute("SELECT * FROM eleitor WHERE titulo_eleitor = %s", (titulo,))
+        eleitor = cursor.fetchone()
+
+        if not eleitor:
+            print("Eleitor não encontrado.")
+            return
+
+        confirm = input(f"Tem certeza que deseja remover {eleitor['nome_completo']}? (s/n): ").lower()
+
+        if confirm == 's':
+            cursor.execute("DELETE FROM eleitor WHERE titulo_eleitor = %s", (titulo,))
+            conn.commit()
+            print("Eleitor removido com sucesso!")
+        else:
+            print("Operação cancelada.")
+
+    except mysql.connector.Error as err:
+        print("Erro ao remover:", err)
