@@ -1,3 +1,13 @@
+import mysql.connector
+
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="Lobo2404$",
+    database="sistema_votacao"
+)
+
+cursor = conn.cursor(dictionary=True)
 def menu_eleitor():
     opcao = ""
     while opcao != "0":
