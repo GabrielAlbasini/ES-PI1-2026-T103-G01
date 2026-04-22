@@ -227,9 +227,6 @@ def buscar_eleitor():
         print(f"Status: {eleitor['status_voto']}")
     else:
         print("Eleitor não encontrado.")
-if __name__ == "__main__":
-    main() 
-
 
 def listar_eleitores():
     print("\n--- LISTA DE ELEITORES ---")
@@ -315,3 +312,5 @@ def remover_eleitor():
 
     except mysql.connector.Error as err:
         print("Erro ao remover:", err)
+if __name__ == "__main__":
+    main() 
