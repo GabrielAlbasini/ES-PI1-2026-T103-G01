@@ -290,6 +290,7 @@ def main():
             print("Opção inválida.")
 
 def cadastrar_eleitor():
+    # Função para cadastrar um novo eleitor no sistema
     print("\n--- CADASTRO DE ELEITOR ---")
     
     nome = input("Digite o nome: ").strip()
@@ -297,14 +298,34 @@ def cadastrar_eleitor():
     cpf = input("Digite o CPF: ").strip()
     mesario = input("É mesário? (s/n): ").strip().lower()
     chave = input("Digite a chave de acesso: ").strip()
-
-    if not nome or not titulo or not cpf or not chave:
+    # Validação dos campos obrigatórios
+    if not nome or not titulo or not cpf or not chave: 
         print("Erro: Todos os campos são obrigatórios!")
         return
+    # Validação do campo mesário
+    if mesario not in ["s", "n"]:
+        print("Erro: Digite apenas 's' ou 'n' para mesário!")
+        return
+    # Validação do CPF e do título de eleitor
+    if not validar_cpf(cpf):
+        print("Erro: CPF inválido!")
+        return
 
-    mesario_bool = True if mesario == "s" else False
-
+    if not validar_titulo_eleitor(titulo):
+        print("Erro: Título de eleitor inválido!")
+        return
+    # Verificação de duplicidade de CPF ou título de eleitor
     try:
+        cursor.execute(
+            "SELECT * FROM eleitor WHERE cpf = %s OR titulo_eleitor = %s",    
+            (cpf, titulo)
+        )
+        if cursor.fetchone():
+            print("Erro: Eleitor já cadastrado!")
+            return
+    # Conversão do campo mesário para booleano
+        mesario_bool = mesario == "s"
+    # Inserção do novo eleitor no banco de dados
         sql = """
         INSERT INTO eleitor 
         (nome_completo, cpf, titulo_eleitor, mesario, chave_acesso)
@@ -323,12 +344,12 @@ def cadastrar_eleitor():
 
 def buscar_eleitor():
     print("\n--- BUSCAR ELEITOR ---")
-
+    #Busca um eleitor pelo título de eleitor e exibe suas informações
     titulo = input("Digite o título do eleitor: ").strip()
-
+    
     cursor.execute("SELECT * FROM eleitor WHERE titulo_eleitor = %s", (titulo,))
     eleitor = cursor.fetchone()
-
+    # Exibe as informações do eleitor encontrado ou uma mensagem de erro caso não seja encontrado
     if eleitor:
         print("\nEleitor encontrado:")
         print(f"Nome: {eleitor['nome_completo']}")
