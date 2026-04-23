@@ -394,23 +394,51 @@ def editar_eleitor():
             print("Eleitor não encontrado.")
             return
 
-        print("\n")
+        print("\nDeixe em branco para manter o valor atual.\n")
 
         novo_nome = input(f"Nome ({eleitor['nome_completo']}): ").strip()
         novo_cpf = input(f"CPF ({eleitor['cpf']}): ").strip()
-        novo_mesario = input("É mesário? (s/n): ").strip().lower()
+        mesario_atual = 's' if eleitor['mesario'] else 'n'
+        novo_mesario = input(f"É mesário? (s/n) [{mesario_atual}]: ").strip().lower()
 
+        # VALIDAÇÃO MESÁRIO 
+        if novo_mesario and novo_mesario not in ["s", "n"]:
+            print("Erro: use apenas 's' ou 'n' para mesário!")
+            return
+      
+        # CPF válido só se foi digitado e for diferente do valor atual 
+        if novo_cpf:
+            if not validar_cpf(novo_cpf):
+                print("Erro: CPF inválido!")
+                return
+
+            cursor.execute(
+                "SELECT * FROM eleitor WHERE cpf = %s AND titulo_eleitor != %s",
+                (novo_cpf, titulo)
+            )
+
+            if cursor.fetchone():
+                print("Erro: CPF já está sendo usado por outro eleitor!")
+                return
+
+        # valores finais 
         nome = novo_nome if novo_nome else eleitor['nome_completo']
-        cpf = novo_cpf if novo_cpf else eleitor['cpf']
-        mesario = eleitor['mesario'] if novo_mesario == "" else (novo_mesario == 's')
+        cpf_final = novo_cpf if novo_cpf else eleitor['cpf']
+        if novo_mesario:
+            mesario_final = novo_mesario == 's'
+        else:
+            mesario_final = eleitor['mesario']
+        
 
         sql = """
         UPDATE eleitor
-        SET nome_completo = %s, cpf = %s, mesario = %s
+        SET nome_completo = %s,
+            cpf = %s,
+            mesario = %s
         WHERE titulo_eleitor = %s
         """
 
-        cursor.execute(sql, (nome, cpf, mesario, titulo))
+        cursor.execute(sql, (nome, cpf_final, mesario_final, titulo))
         conn.commit()
 
         print("Eleitor atualizado com sucesso!")
