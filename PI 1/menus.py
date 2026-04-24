@@ -6,6 +6,10 @@ from eleitor import (
     remover_eleitor
 )
 
+# Controla o estado da votação
+# False = fechada | True = aberta
+sistema_aberto = False
+
 def menu_eleitor():
     opcao = ""
     while opcao != "0":
@@ -126,24 +130,48 @@ def menu_resultados():
             print("Opção inválida!")
 
 def sistema_votacao():
+    global sistema_aberto  # permite alterar a variável global
+
     opcao = ""
     while opcao != "0":
         print("\n--- SISTEMA DE VOTAÇÃO ---")
-        print("1 - Votar")
+        print("1 - Abrir votação")
         print("2 - Encerrar votação")
+        print("3 - Ver status")
         print("0 - Voltar")
 
         opcao = input("Escolha: ")
 
+        # Abrir votação
         if opcao == "1":
-            print("Votando...")
+            if sistema_aberto:
+                print("A votação já está aberta!")
+            else:
+                sistema_aberto = True
+                print("Votação ABERTA!")
+
+        # Encerrar votação
         elif opcao == "2":
-            print("Encerrando votação...")
+            if not sistema_aberto:
+                print("A votação já está encerrada!")
+            else:
+                sistema_aberto = False
+                print("Votação ENCERRADA!")
+
+        # Ver status
+        elif opcao == "3":
+            if sistema_aberto:
+                print("Status: VOTAÇÃO ABERTA")
+            else:
+                print("Status: VOTAÇÃO ENCERRADA")
+
+        # Voltar
         elif opcao == "0":
             print("Voltando...")
+
+        # Opção inválida
         else:
             print("Opção inválida!")
-
 
 def menu_votacao():
     opcao = ""
