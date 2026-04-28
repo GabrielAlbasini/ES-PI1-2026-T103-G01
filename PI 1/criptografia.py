@@ -7,83 +7,48 @@ MOD = 26
 
 
 def texto_para_numeros(texto):
-    """
-    Converte texto em números (A=0, B=1, ..., Z=25).
+  
+# Converte texto em números (A=0, B=1, ..., Z=25).
 
-    Args:
-        texto (str): Texto a ser convertido.
-
-    Returns:
-        list[int]: Lista de números correspondentes.
-    """
     texto = texto.upper().replace(" ", "")
     return [ord(c) - ord('A') for c in texto if c.isalpha()]
 
 
 def numeros_para_texto(numeros):
-    """
-    Converte números em texto (0=A, 1=B, ..., 25=Z).
 
-    Args:
-        numeros (list[int]): Lista de números.
+# Converte números em texto (0=A, 1=B, ..., 25=Z).
 
-    Returns:
-        str: Texto convertido.
-    """
+
     return ''.join([chr(n + ord('A')) for n in numeros])
 
 
 def ajustar_texto(texto):
-    """
-    Ajusta o texto para ter tamanho par.
 
-    Args:
-        texto (str): Texto original.
+# Ajusta o texto para ter tamanho par.
 
-    Returns:
-        str: Texto ajustado.
-    """
     if len(texto) % 2 != 0:
         texto += 'X'
     return texto
 
 
 def numero_para_letra(texto):
-    """
-    Converte números em letras (0=A, ..., 9=J).
 
-    Args:
-        texto (str): Texto numérico.
+# Converte números em letras (0=A, ..., 9=J).
 
-    Returns:
-        str: Texto convertido.
-    """
     return ''.join([chr(int(d) + 65) for d in texto if d.isdigit()])
 
 
 def letra_para_numero(texto):
-    """
-    Converte letras em números (A=0, ..., J=9).
 
-    Args:
-        texto (str): Texto em letras.
+# Converte letras em números (A=0, ..., J=9).
 
-    Returns:
-        str: Texto numérico.
-    """
     return ''.join([str(ord(c) - 65) for c in texto])
 
 
 def criptografar_hill(texto):
-    """
-    Criptografa um texto usando a Cifra de Hill.
 
-    Args:
-        texto (str): Texto original.
+# Criptografa um texto usando a Cifra de Hill.
 
-    Returns:
-        str: Texto criptografado.
-    """
     texto = ajustar_texto(texto)
     numeros = texto_para_numeros(texto)
     resultado = []
@@ -99,15 +64,9 @@ def criptografar_hill(texto):
 
 
 def inversa_modular_matriz(matriz):
-    """
-    Calcula a inversa modular da matriz 2x2 no módulo 26.
 
-    Args:
-        matriz (np.array): Matriz chave.
+# Calcula a inversa modular da matriz 2x2 no módulo 26.
 
-    Returns:
-        np.array: Matriz inversa modular.
-    """
     det = int(np.round(np.linalg.det(matriz)))
     det_mod = det % MOD
 
@@ -123,15 +82,9 @@ def inversa_modular_matriz(matriz):
 
 
 def descriptografar_hill(texto):
-    """
-    Descriptografa um texto usando a Cifra de Hill.
 
-    Args:
-        texto (str): Texto criptografado.
+# Descriptografa um texto usando a Cifra de Hill.
 
-    Returns:
-        str: Texto original.
-    """
     numeros = texto_para_numeros(texto)
     chave_inv = inversa_modular_matriz(CHAVE)
     resultado = []
