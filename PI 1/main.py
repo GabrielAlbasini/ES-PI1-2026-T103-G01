@@ -1,15 +1,24 @@
-import mysql.connector
+import sys
+try:
+    import mysql.connector
+except ModuleNotFoundError:
+    print("Erro: biblioteca mysql-connector-python não instalada.")
+    print("Rode: pip3 install mysql-connector-python")
+    sys.exit(1)
 from datetime import datetime
 import secrets
 
-conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="Lobo2404$",
-    database="sistema_votacao"
-)
-
-cursor = conn.cursor(dictionary=True)
+try:
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="Lobo2404$",
+        database="sistema_votacao"
+    )
+    cursor = conn.cursor(dictionary=True)
+except mysql.connector.Error as err:
+    print("Erro ao conectar no MySQL:", err)
+    sys.exit(1)
 
 def validar_cpf(cpf): #Valida se um CPF é matematicamente correto.
     
@@ -162,6 +171,26 @@ def menu_candidato():
             remover_candidato()
         elif opcao == "0":
             print("Voltando...")
+
+
+def cadastrar_candidato():
+    print("Função de cadastrar candidato ainda não implementada.")
+
+
+def buscar_candidato():
+    print("Função de buscar candidato ainda não implementada.")
+
+
+def listar_candidatos():
+    print("Função de listar candidatos ainda não implementada.")
+
+
+def editar_candidato():
+    print("Função de editar candidato ainda não implementada.")
+
+
+def remover_candidato():
+    print("Função de remover candidato ainda não implementada.")
 
 
 def menu_gerenciamento():
