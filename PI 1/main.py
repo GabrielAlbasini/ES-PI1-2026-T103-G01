@@ -1,3 +1,5 @@
+from menus import menu_principal
+
 import sys
 try:
     import mysql.connector
@@ -584,4 +586,4 @@ def remover_eleitor():
     except mysql.connector.Error as err:
         print("Erro ao remover:", err)
 if __name__ == "__main__":
-    main() 
+    menu_principal()
