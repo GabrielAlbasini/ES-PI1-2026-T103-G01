@@ -5,6 +5,7 @@ from eleitor import (
     editar_eleitor,
     remover_eleitor
 )
+from voto import registrar_voto
 
 def menu_eleitor():
     opcao = ""
@@ -136,7 +137,7 @@ def sistema_votacao():
         opcao = input("Escolha: ")
 
         if opcao == "1":
-            print("Votando...")
+            registrar_voto()
         elif opcao == "2":
             print("Encerrando votação...")
         elif opcao == "0":
