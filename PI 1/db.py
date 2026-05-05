@@ -1,5 +1,7 @@
 import mysql.connector
 
+# CONEXÃO
+
 try:
     conn = mysql.connector.connect(
         host="localhost",
@@ -7,23 +9,31 @@ try:
         password="Lobo2404$",
         database="sistema_votacao"
     )
-
     cursor = conn.cursor(dictionary=True)
 
 except mysql.connector.Error as err:
     print("Erro ao conectar no banco:", err)
 
+
+# ELEITOR
+
+
 def inserir_eleitor(nome, cpf, titulo, mesario, chave):
-    sql = """
-    INSERT INTO eleitor 
-    (nome_completo, cpf, titulo_eleitor, mesario, chave_acesso)
-    VALUES (%s, %s, %s, %s, %s)
-    """
-    cursor.execute(sql, (nome, cpf, titulo, mesario, chave))
-    conn.commit()
-    
+    cursor.execute(
+        """
+        INSERT INTO eleitor 
+        (nome_completo, cpf, titulo_eleitor, mesario, chave_acesso)
+        VALUES (%s, %s, %s, %s, %s)
+        """,
+        (nome, cpf, titulo, mesario, chave)
+    )
+
+
 def buscar_por_titulo(titulo):
-    cursor.execute("SELECT * FROM eleitor WHERE titulo_eleitor = %s", (titulo,))
+    cursor.execute(
+        "SELECT * FROM eleitor WHERE titulo_eleitor = %s",
+        (titulo,)
+    )
     return cursor.fetchone()
 
 
@@ -41,67 +51,90 @@ def listar_todos():
 
 
 def atualizar_eleitor(nome, cpf, mesario, titulo):
-    sql = """
-    UPDATE eleitor
-    SET nome_completo = %s,
-        cpf = %s,
-        mesario = %s
-    WHERE titulo_eleitor = %s
-    """
-    cursor.execute(sql, (nome, cpf, mesario, titulo))
-    conn.commit()
+    cursor.execute(
+        """
+        UPDATE eleitor
+        SET nome_completo = %s,
+            cpf = %s,
+            mesario = %s
+        WHERE titulo_eleitor = %s
+        """,
+        (nome, cpf, mesario, titulo)
+    )
 
 
 def remover_por_titulo(titulo):
-    cursor.execute("DELETE FROM eleitor WHERE titulo_eleitor = %s", (titulo,))
-    conn.commit()
+    cursor.execute(
+        "DELETE FROM eleitor WHERE titulo_eleitor = %s",
+        (titulo,)
+    )
 
-# =========================
-# VOTO
-# =========================
+# VOTAÇÃO
 
 def buscar_eleitor_login(titulo, chave):
     cursor.execute(
-        "SELECT id, nome_completo, status_voto FROM eleitor WHERE titulo_eleitor=%s AND chave_acesso=%s",
+        """
+        SELECT id, nome_completo, status_voto 
+        FROM eleitor 
+        WHERE titulo_eleitor = %s AND chave_acesso = %s
+        """,
         (titulo, chave)
     )
     return cursor.fetchone()
 
 
 def listar_candidatos():
-    cursor.execute("SELECT id, numero, nome, partido FROM candidato ORDER BY numero")
+    cursor.execute(
+        "SELECT id, numero, nome, partido FROM candidato ORDER BY numero"
+    )
     return cursor.fetchall()
 
 
 def buscar_candidato(numero):
-    cursor.execute("SELECT id, nome FROM candidato WHERE numero = %s", (numero,))
+    cursor.execute(
+        "SELECT id, nome FROM candidato WHERE numero = %s",
+        (numero,)
+    )
     return cursor.fetchone()
 
 
-def registrar_voto_db(id_candidato, data, protocolo):
+def inserir_voto(id_candidato, data_hora, protocolo):
     cursor.execute(
-        "INSERT INTO voto (id_candidato, data_hora, protocolo) VALUES (%s, %s, %s)",
-        (id_candidato, data, protocolo)
+        """
+        INSERT INTO voto (id_candidato, data_hora, protocolo)
+        VALUES (%s, %s, %s)
+        """,
+        (id_candidato, data_hora, protocolo)
     )
 
 
-def atualizar_status(id_eleitor):
+def atualizar_status_eleitor(id_eleitor):
     cursor.execute(
-        "UPDATE eleitor SET status_voto='JA_VOTOU' WHERE id=%s",
+        "UPDATE eleitor SET status_voto = 'JA_VOTOU' WHERE id = %s",
         (id_eleitor,)
     )
 
 
-def registrar_log(data, descricao):
+def inserir_log(data_hora, descricao):
     cursor.execute(
-        "INSERT INTO log_ocorrencias (data_hora, descricao) VALUES (%s, %s)",
-        (data, descricao)
+        """
+        INSERT INTO log_ocorrencias (data_hora, descricao)
+        VALUES (%s, %s)
+        """,
+        (data_hora, descricao)
     )
 
 
-def commit():
+def resetar_votacao():
+    cursor.execute("DELETE FROM voto")
+    cursor.execute("UPDATE eleitor SET status_voto = 'NAO_VOTOU'")
+
+
+# CONTROLE (TRANSAÇÃO)
+
+def salvar():
     conn.commit()
 
 
-def rollback():
+def desfazer():
     conn.rollback()

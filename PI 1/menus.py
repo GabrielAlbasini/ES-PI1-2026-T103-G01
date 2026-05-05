@@ -5,7 +5,10 @@ from eleitor import (
     editar_eleitor,
     remover_eleitor
 )
-from voto import registrar_voto
+from voto import (
+    iniciar_votacao,
+    registrar_voto,
+) 
 
 def menu_eleitor():
     opcao = ""
@@ -130,15 +133,18 @@ def sistema_votacao():
     opcao = ""
     while opcao != "0":
         print("\n--- SISTEMA DE VOTAÇÃO ---")
-        print("1 - Votar")
-        print("2 - Encerrar votação")
+        print("1 - Iniciar votação")
+        print("2 - Votar")
+        print("3 - Encerrar votação")
         print("0 - Voltar")
 
         opcao = input("Escolha: ")
 
         if opcao == "1":
-            registrar_voto()
+            iniciar_votacao()
         elif opcao == "2":
+            registrar_voto()
+        elif opcao == "3":
             print("Encerrando votação...")
         elif opcao == "0":
             print("Voltando...")

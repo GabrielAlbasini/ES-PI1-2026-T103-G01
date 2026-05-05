@@ -5,6 +5,7 @@ from db import (
     inserir_voto,
     atualizar_status_eleitor,
     inserir_log,
+    resetar_votacao,
     salvar,
     desfazer
 )
@@ -15,6 +16,19 @@ import secrets
 
 def gerar_protocolo():
     return secrets.token_hex(8).upper()
+
+
+def iniciar_votacao():
+    print("\n--- INICIAR VOTAÇÃO ---")
+
+    confirm = input("Deseja iniciar uma nova votação? (s/n): ").lower()
+
+    if confirm == 's':
+        resetar_votacao()
+        salvar()
+        print("Votação reiniciada com sucesso!")
+    else:
+        print("Operação cancelada.")
 
 
 def registrar_voto():
