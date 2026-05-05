@@ -1,13 +1,26 @@
-import mysql.connector
+from menus import menu_principal
 
-conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="Lobo2404$",
-    database="sistema_votacao"
-)
+import sys
+try:
+    import mysql.connector
+except ModuleNotFoundError:
+    print("Erro: biblioteca mysql-connector-python não instalada.")
+    print("Rode: pip3 install mysql-connector-python")
+    sys.exit(1)
+from datetime import datetime
+import secrets
 
-cursor = conn.cursor(dictionary=True)
+try:
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="Lobo2404$",
+        database="sistema_votacao"
+    )
+    cursor = conn.cursor(dictionary=True)
+except mysql.connector.Error as err:
+    print("Erro ao conectar no MySQL:", err)
+    sys.exit(1)
 
 def validar_cpf(cpf): #Valida se um CPF é matematicamente correto.
     
@@ -162,6 +175,26 @@ def menu_candidato():
             print("Voltando...")
 
 
+def cadastrar_candidato():
+    print("Função de cadastrar candidato ainda não implementada.")
+
+
+def buscar_candidato():
+    print("Função de buscar candidato ainda não implementada.")
+
+
+def listar_candidatos():
+    print("Função de listar candidatos ainda não implementada.")
+
+
+def editar_candidato():
+    print("Função de editar candidato ainda não implementada.")
+
+
+def remover_candidato():
+    print("Função de remover candidato ainda não implementada.")
+
+
 def menu_gerenciamento():
     opcao = ""
     while opcao != "0":
@@ -238,13 +271,94 @@ def sistema_votacao():
         opcao = input("Escolha: ")
 
         if opcao == "1":
-            print("Votando...")
+            registrar_voto()
         elif opcao == "2":
             print("Encerrando votação...")
         elif opcao == "0":
             print("Voltando...")
         else:
             print("Opção inválida!")
+
+
+def gerar_protocolo():
+    return secrets.token_hex(8).upper()
+
+
+def registrar_voto():
+    print("\n--- REGISTRO DE VOTO ---")
+    
+    titulo = input("Título de eleitor: ").strip()
+    chave = input("Chave de acesso: ").strip()
+
+    if titulo == "" or chave == "":
+        print("Preencha título e chave.")
+        return
+
+    try:
+        # 1) Verifica se eleitor existe
+        cursor.execute(
+            "SELECT id, nome_completo, status_voto FROM eleitor WHERE titulo_eleitor = %s AND chave_acesso = %s",
+            (titulo, chave)
+        )
+        eleitor = cursor.fetchone()
+
+        if eleitor is None:
+            print("Eleitor não encontrado ou chave incorreta.")
+            return
+
+        # 2) Verifica se já votou
+        if eleitor["status_voto"] == "JA_VOTOU":
+            print("Esse eleitor já votou.")
+            return
+
+        # 3) Mostra candidatos
+        cursor.execute("SELECT id, numero, nome, partido FROM candidato ORDER BY numero")
+        candidatos = cursor.fetchall()
+
+        if len(candidatos) == 0:
+            print("Nenhum candidato cadastrado.")
+            return
+
+        print("\nCandidatos:")
+        for c in candidatos:
+            print(f"{c['numero']} - {c['nome']} ({c['partido']})")
+
+        numero = input("Digite o número do candidato: ").strip()
+        if not numero.isdigit():
+            print("Número inválido.")
+            return
+
+        # 4) Busca candidato escolhido
+        cursor.execute("SELECT id, nome FROM candidato WHERE numero = %s", (int(numero),))
+        candidato = cursor.fetchone()
+
+        if candidato is None:
+            print("Candidato não existe.")
+            return
+
+        # 5) Registra voto e atualiza status do eleitor
+        agora = datetime.now()
+        protocolo = gerar_protocolo()
+
+        cursor.execute(
+            "INSERT INTO voto (id_candidato, data_hora, protocolo) VALUES (%s, %s, %s)",
+            (candidato["id"], agora, protocolo)
+        )
+        cursor.execute(
+            "UPDATE eleitor SET status_voto = 'JA_VOTOU' WHERE id = %s",
+            (eleitor["id"],)
+        )
+        cursor.execute(
+            "INSERT INTO log_ocorrencias (data_hora, descricao) VALUES (%s, %s)",
+            (agora, f"SUCESSO: voto registrado para {eleitor['nome_completo']}")
+        )
+
+        conn.commit()
+        print(f"Voto registrado com sucesso! Protocolo: {protocolo}")
+
+    except Exception as erro:
+        conn.rollback()
+        print("Erro ao registrar voto:", erro)
 
 
 def menu_votacao():
@@ -472,4 +586,4 @@ def remover_eleitor():
     except mysql.connector.Error as err:
         print("Erro ao remover:", err)
 if __name__ == "__main__":
-    main() 
+    menu_principal()

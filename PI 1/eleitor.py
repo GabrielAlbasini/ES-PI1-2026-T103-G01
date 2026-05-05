@@ -1,0 +1,158 @@
+from validações import validar_cpf, validar_titulo_eleitor
+from db import (
+    inserir_eleitor,
+    buscar_por_titulo,
+    buscar_por_cpf_ou_titulo,
+    listar_todos,
+    atualizar_eleitor,
+    remover_por_titulo
+)
+
+
+# CADASTRAR
+def cadastrar_eleitor():
+    print("\n--- CADASTRO DE ELEITOR ---")
+    
+    nome = input("Digite o nome: ").strip()
+    titulo = input("Digite o título de eleitor: ").strip()
+    cpf = input("Digite o CPF: ").strip()
+    mesario = input("É mesário? (s/n): ").strip().lower()
+    chave = input("Digite a chave de acesso: ").strip()
+
+    if not nome or not titulo or not cpf or not chave:
+        print("Erro: Todos os campos são obrigatórios!")
+        return
+
+    if mesario not in ["s", "n"]:
+        print("Erro: Digite apenas 's' ou 'n'")
+        return
+
+    if not validar_cpf(cpf):
+        print("Erro: CPF inválido!")
+        return
+
+    if not validar_titulo_eleitor(titulo):
+        print("Erro: Título inválido!")
+        return
+
+    if buscar_por_cpf_ou_titulo(cpf, titulo):
+        print("Erro: Eleitor já cadastrado!")
+        return
+
+    mesario_bool = mesario == "s"
+
+    sucesso = inserir_eleitor(nome, cpf, titulo, mesario_bool, chave)
+
+    if sucesso:
+        print("Eleitor cadastrado com sucesso!")
+    else:
+        print("Erro ao cadastrar.")
+
+
+# BUSCAR
+
+def buscar_eleitor():
+    print("\n--- BUSCAR ELEITOR ---")
+
+    titulo = input("Digite o título do eleitor: ").strip()
+
+    eleitor = buscar_por_titulo(titulo)
+
+    if eleitor:
+        print("\nEleitor encontrado:")
+        print(f"Nome: {eleitor['nome_completo']}")
+        print(f"Título: {eleitor['titulo_eleitor']}")
+        print(f"CPF: {eleitor['cpf']}")
+        print(f"Status: {eleitor['status_voto']}")
+    else:
+        print("Eleitor não encontrado.")
+
+
+# LISTAR
+
+def listar_eleitores():
+    print("\n--- LISTA DE ELEITORES ---")
+
+    eleitores = listar_todos()
+
+    if eleitores:
+        for e in eleitores:
+            print("\n----------")
+            print(f"Nome: {e['nome_completo']}")
+            print(f"Título: {e['titulo_eleitor']}")
+            print(f"CPF: {e['cpf']}")
+            print(f"Mesário: {'Sim' if e['mesario'] else 'Não'}")
+            print(f"Status: {e['status_voto']}")
+    else:
+        print("Nenhum eleitor cadastrado.")
+
+
+# EDITAR
+
+def editar_eleitor():
+    print("\n- EDITAR ELEITOR -")
+
+    titulo = input("Digite o título: ").strip()
+
+    eleitor = buscar_por_titulo(titulo)
+
+    if not eleitor:
+        print("Eleitor não encontrado.")
+        return
+
+    print("\nDeixe em branco para manter o valor atual.\n")
+
+    novo_nome = input(f"Nome ({eleitor['nome_completo']}): ").strip()
+    novo_cpf = input(f"CPF ({eleitor['cpf']}): ").strip()
+    mesario_atual = 's' if eleitor['mesario'] else 'n'
+    novo_mesario = input(f"É mesário? (s/n) [{mesario_atual}]: ").strip().lower()
+
+    if novo_mesario and novo_mesario not in ["s", "n"]:
+        print("Erro: use apenas 's' ou 'n'")
+        return
+
+    if novo_cpf:
+        if not validar_cpf(novo_cpf):
+            print("Erro: CPF inválido!")
+            return
+
+    nome_final = novo_nome if novo_nome else eleitor['nome_completo']
+    cpf_final = novo_cpf if novo_cpf else eleitor['cpf']
+
+    if novo_mesario:
+        mesario_final = novo_mesario == "s"
+    else:
+        mesario_final = eleitor['mesario']
+
+    sucesso = atualizar_eleitor(nome_final, cpf_final, mesario_final, titulo)
+
+    if sucesso:
+        print("Eleitor atualizado com sucesso!")
+    else:
+        print("Erro ao atualizar.")
+
+
+# REMOVER
+def remover_eleitor():
+    print("\n--- REMOVER ELEITOR ---")
+
+    titulo = input("Digite o título: ").strip()
+
+    eleitor = buscar_por_titulo(titulo)
+
+    if not eleitor:
+        print("Eleitor não encontrado.")
+        return
+
+    confirm = input(f"Tem certeza que deseja remover {eleitor['nome_completo']}? (s/n): ").lower()
+
+    if confirm != "s":
+        print("Operação cancelada.")
+        return
+
+    sucesso = remover_por_titulo(titulo)
+
+    if sucesso:
+        print("Eleitor removido com sucesso!")
+    else:
+        print("Erro ao remover.")
