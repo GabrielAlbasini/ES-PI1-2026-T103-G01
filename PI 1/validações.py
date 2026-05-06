@@ -97,3 +97,22 @@ def validar_titulo_eleitor(titulo):
         return False
     
     return True
+
+# --- Solicitar cpf com loop de validação ---
+def solicitar_cpf():
+    #Solicita o CPF ao usuário em loop até que um CPF válido seja informado.
+    while True:
+        cpf = input("Digite o CPF: ").strip()
+        if validar_cpf(cpf):
+            return cpf
+        print("CPF inválido! Digite novamente.")
+
+
+# --- SOlicitar titulo com loop de validação ---
+def solicitar_titulo():
+    #Solicita o título de eleitor ao usuário em loop até que um título válido seja informado.
+    while True:
+        titulo = input("Digite o título de eleitor: ").strip()
+        if validar_titulo_eleitor(titulo):
+            return titulo
+        print("Título de eleitor inválido! Digite novamente.")
