@@ -14,26 +14,71 @@ from datetime import datetime
 import secrets
 
 
+VOTACAO_ATIVA = False
+
+
 def gerar_protocolo():
     return secrets.token_hex(8).upper()
 
 
+# INICIAR VOTAÇÃO
 def iniciar_votacao():
+    global VOTACAO_ATIVA
+
     print("\n--- INICIAR VOTAÇÃO ---")
 
     confirm = input("Deseja iniciar uma nova votação? (s/n): ").lower()
 
     if confirm == 's':
-        resetar_votacao()
-        salvar()
-        registrar("votação reiniciada")
-        print("Votação reiniciada com sucesso!")
+        try:
+            resetar_votacao()
+            VOTACAO_ATIVA = True
+            salvar()
+            registrar("votação iniciada/reiniciada")
+            print("Votação iniciada com sucesso!")
+        except Exception as erro:
+            desfazer()
+            registrar(f"Erro ao iniciar votação: {erro}")
+            print("Erro ao iniciar votação:", erro)
     else:
         print("Operação cancelada.")
 
 
+# ENCERRAR VOTAÇÃO
+def encerrar_votacao():
+    global VOTACAO_ATIVA
+
+    print("\n--- ENCERRAR VOTAÇÃO ---")
+
+    confirm = input("Deseja encerrar a votação? (s/n): ").lower()
+
+    if confirm != 's':
+        print("Operação cancelada.")
+        return
+
+    try:
+        VOTACAO_ATIVA = False
+        agora = datetime.now()
+
+        inserir_log(agora, "Votação encerrada")
+        registrar("votação encerrada")
+        salvar()
+
+        print("Votação encerrada com sucesso!")
+
+    except Exception as erro:
+        desfazer()
+        registrar(f"Erro ao encerrar votação: {erro}")
+        print("Erro ao encerrar votação:", erro)
+
+
+# REGISTRAR VOTO
 def registrar_voto():
     print("\n--- REGISTRO DE VOTO ---")
+
+    if not VOTACAO_ATIVA:
+        print("A votação não está ativa.")
+        return
 
     titulo = input("Título de eleitor: ").strip()
     chave = input("Chave de acesso: ").strip()
