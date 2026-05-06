@@ -1,6 +1,5 @@
 import mysql.connector
 
-# CONEXÃO
 try:
     conn = mysql.connector.connect(
         host="localhost",
@@ -13,9 +12,7 @@ try:
 except mysql.connector.Error as err:
     print("Erro ao conectar no banco:", err)
 
-
 # ELEITOR
-
 
 def inserir_eleitor(nome, cpf, titulo, mesario, chave):
     try:
@@ -24,20 +21,13 @@ def inserir_eleitor(nome, cpf, titulo, mesario, chave):
             (nome_completo, cpf, titulo_eleitor, mesario, chave_acesso)
             VALUES (%s, %s, %s, %s, %s)
         """, (nome, cpf, titulo, mesario, chave))
-
-        conn.commit()
         return True
-
-    except Exception as e:
-        print("Erro ao inserir eleitor:", e)
+    except:
         return False
 
 
 def buscar_por_titulo(titulo):
-    cursor.execute(
-        "SELECT * FROM eleitor WHERE titulo_eleitor = %s",
-        (titulo,)
-    )
+    cursor.execute("SELECT * FROM eleitor WHERE titulo_eleitor = %s", (titulo,))
     return cursor.fetchone()
 
 
@@ -63,12 +53,8 @@ def atualizar_eleitor(nome, cpf, mesario, titulo):
                 mesario = %s
             WHERE titulo_eleitor = %s
         """, (nome, cpf, mesario, titulo))
-
-        conn.commit()
-        return cursor.rowcount > 0
-
-    except Exception as e:
-        print("Erro ao atualizar eleitor:", e)
+        return True
+    except:
         return False
 
 
@@ -78,12 +64,8 @@ def remover_por_titulo(titulo):
             "DELETE FROM eleitor WHERE titulo_eleitor = %s",
             (titulo,)
         )
-
-        conn.commit()
-        return cursor.rowcount > 0
-
-    except Exception as e:
-        print("ERRO REAL AO REMOVER:", e)
+        return True
+    except:
         return False
 
 
@@ -95,85 +77,59 @@ def buscar_eleitor_login(titulo, chave):
         FROM eleitor 
         WHERE titulo_eleitor = %s AND chave_acesso = %s
     """, (titulo, chave))
-
     return cursor.fetchone()
 
 
 def listar_candidatos():
-    cursor.execute(
-        "SELECT id, numero, nome, partido FROM candidato ORDER BY numero"
-    )
+    cursor.execute("SELECT id, numero, nome, partido FROM candidato ORDER BY numero")
     return cursor.fetchall()
 
 
 def buscar_candidato(numero):
-    cursor.execute(
-        "SELECT id, nome FROM candidato WHERE numero = %s",
-        (numero,)
-    )
+    cursor.execute("SELECT id, nome FROM candidato WHERE numero = %s", (numero,))
     return cursor.fetchone()
 
 
 def inserir_voto(id_candidato, data_hora, protocolo):
-    try:
-        cursor.execute("""
-            INSERT INTO voto (id_candidato, data_hora, protocolo)
-            VALUES (%s, %s, %s)
-        """, (id_candidato, data_hora, protocolo))
-
-        conn.commit()
-        return True
-
-    except Exception as e:
-        print("Erro ao inserir voto:", e)
-        return False
+    cursor.execute("""
+        INSERT INTO voto (id_candidato, data_hora, protocolo)
+        VALUES (%s, %s, %s)
+    """, (id_candidato, data_hora, protocolo))
 
 
 def atualizar_status_eleitor(id_eleitor):
-    try:
-        cursor.execute(
-            "UPDATE eleitor SET status_voto = 'JA_VOTOU' WHERE id = %s",
-            (id_eleitor,)
-        )
-
-        conn.commit()
-        return True
-
-    except Exception as e:
-        print("Erro ao atualizar status:", e)
-        return False
+    cursor.execute(
+        "UPDATE eleitor SET status_voto = 'JA_VOTOU' WHERE id = %s",
+        (id_eleitor,)
+    )
 
 
 def inserir_log(data_hora, descricao):
-    try:
-        cursor.execute("""
-            INSERT INTO log_ocorrencias (data_hora, descricao)
-            VALUES (%s, %s)
-        """, (data_hora, descricao))
-
-        conn.commit()
-        return True
-
-    except Exception as e:
-        print("Erro ao inserir log:", e)
-        return False
+    cursor.execute("""
+        INSERT INTO log_ocorrencias (data_hora, descricao)
+        VALUES (%s, %s)
+    """, (data_hora, descricao))
 
 
 def resetar_votacao():
-    try:
-        cursor.execute("DELETE FROM voto")
-        cursor.execute("UPDATE eleitor SET status_voto = 'NAO_VOTOU'")
+    cursor.execute("DELETE FROM voto")
+    cursor.execute("UPDATE eleitor SET status_voto = 'NAO_VOTOU'")
 
-        conn.commit()
-        return True
+# CONTROLE DA VOTAÇÃO
 
-    except Exception as e:
-        print("Erro ao resetar votação:", e)
-        return False
+def abrir_votacao():
+    cursor.execute("UPDATE controle_votacao SET status = 'ABERTA' WHERE id = 1")
 
 
-# CONTROLE
+def fechar_votacao():
+    cursor.execute("UPDATE controle_votacao SET status = 'FECHADA' WHERE id = 1")
 
+
+def obter_status_votacao():
+    cursor.execute("SELECT status FROM controle_votacao WHERE id = 1")
+    return cursor.fetchone()["status"]
+
+# TRANSAÇÃO
 
 def salvar():
     conn.commit()
