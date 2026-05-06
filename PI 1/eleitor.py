@@ -13,13 +13,23 @@ import secrets
 import string
 
 
-# GERAR CHAVE AUTOMÁTICA
-def gerar_chave_acesso(tamanho=12):
-    caracteres = string.ascii_letters + string.digits
-    return ''.join(secrets.choice(caracteres) for _ in range(tamanho))
+# GERAR CHAVE DE ACESSO
+
+def gerar_chave_acesso(nome):
+    partes = nome.strip().split()
+
+    if len(partes) < 2:
+        raise ValueError("Digite nome e sobrenome.")
+
+    primeira_parte = partes[0][:2].upper()   # 2 letras do nome
+    letra_sobrenome = partes[1][0].upper()   # 1 letra do sobrenome
+    numeros = ''.join(secrets.choice(string.digits) for _ in range(4))  # 4 números
+
+    return primeira_parte + letra_sobrenome + numeros
 
 
 # CADASTRAR
+
 def cadastrar_eleitor():
     print("\n--- CADASTRO DE ELEITOR ---")
     
@@ -27,8 +37,6 @@ def cadastrar_eleitor():
     titulo = input("Digite o título de eleitor: ").strip()
     cpf = input("Digite o CPF: ").strip()
     mesario = input("É mesário? (s/n): ").strip().lower()
-
-    chave = gerar_chave_acesso()
 
     if not nome or not titulo or not cpf:
         registrar("Erro cadastro: campos obrigatórios não preenchidos")
@@ -54,13 +62,19 @@ def cadastrar_eleitor():
         print("Erro: Eleitor já cadastrado!")
         return
 
+    try:
+        chave = gerar_chave_acesso(nome)
+    except ValueError as e:
+        print(e)
+        return
+
     mesario_bool = mesario == "s"
 
     sucesso = inserir_eleitor(nome, cpf, titulo, mesario_bool, chave)
 
     if sucesso:
         registrar(f"Eleitor cadastrado: {nome} - título {titulo}")
-        print("Eleitor cadastrado com sucesso!")
+        print("\nEleitor cadastrado com sucesso!")
         print(f"Sua chave de acesso é: {chave}")
         print("Guarde essa chave com segurança!")
     else:
@@ -69,6 +83,7 @@ def cadastrar_eleitor():
 
 
 # BUSCAR
+
 def buscar_eleitor():
     print("\n--- BUSCAR ELEITOR ---")
 
@@ -107,6 +122,7 @@ def listar_eleitores():
 
 
 # EDITAR
+
 def editar_eleitor():
     print("\n- EDITAR ELEITOR -")
 
@@ -130,18 +146,13 @@ def editar_eleitor():
         print("Erro: use apenas 's' ou 'n'")
         return
 
-    if novo_cpf:
-        if not validar_cpf(novo_cpf):
-            print("Erro: CPF inválido!")
-            return
+    if novo_cpf and not validar_cpf(novo_cpf):
+        print("Erro: CPF inválido!")
+        return
 
     nome_final = novo_nome if novo_nome else eleitor['nome_completo']
     cpf_final = novo_cpf if novo_cpf else eleitor['cpf']
-
-    if novo_mesario:
-        mesario_final = novo_mesario == "s"
-    else:
-        mesario_final = eleitor['mesario']
+    mesario_final = (novo_mesario == "s") if novo_mesario else eleitor['mesario']
 
     sucesso = atualizar_eleitor(nome_final, cpf_final, mesario_final, titulo)
 
@@ -154,6 +165,7 @@ def editar_eleitor():
 
 
 # REMOVER
+
 def remover_eleitor():
     print("\n--- REMOVER ELEITOR ---")
 
