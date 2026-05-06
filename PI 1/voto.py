@@ -1,5 +1,5 @@
 from auditoria import registrar
-from validacoes import validar_cpf, validar_titulo_eleitor
+from validações import validar_cpf, validar_titulo_eleitor
 from db import (
     inserir_eleitor,
     buscar_por_titulo,
