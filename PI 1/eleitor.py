@@ -9,6 +9,15 @@ from db import (
     remover_por_titulo
 )
 
+import secrets
+import string
+
+
+# GERAR CHAVE AUTOMÁTICA
+def gerar_chave_acesso(tamanho=12):
+    caracteres = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(caracteres) for _ in range(tamanho))
+
 
 # CADASTRAR
 def cadastrar_eleitor():
@@ -18,9 +27,10 @@ def cadastrar_eleitor():
     titulo = input("Digite o título de eleitor: ").strip()
     cpf = input("Digite o CPF: ").strip()
     mesario = input("É mesário? (s/n): ").strip().lower()
-    chave = input("Digite a chave de acesso: ").strip()
 
-    if not nome or not titulo or not cpf or not chave:
+    chave = gerar_chave_acesso()
+
+    if not nome or not titulo or not cpf:
         registrar("Erro cadastro: campos obrigatórios não preenchidos")
         print("Erro: Todos os campos são obrigatórios!")
         return
@@ -51,13 +61,14 @@ def cadastrar_eleitor():
     if sucesso:
         registrar(f"Eleitor cadastrado: {nome} - título {titulo}")
         print("Eleitor cadastrado com sucesso!")
+        print(f"Sua chave de acesso é: {chave}")
+        print("Guarde essa chave com segurança!")
     else:
         registrar(f"Erro ao cadastrar eleitor: {nome}")
         print("Erro ao cadastrar.")
 
 
 # BUSCAR
-
 def buscar_eleitor():
     print("\n--- BUSCAR ELEITOR ---")
 
@@ -78,7 +89,6 @@ def buscar_eleitor():
 
 
 # LISTAR
-
 def listar_eleitores():
     print("\n--- LISTA DE ELEITORES ---")
 
@@ -97,7 +107,6 @@ def listar_eleitores():
 
 
 # EDITAR
-
 def editar_eleitor():
     print("\n- EDITAR ELEITOR -")
 
