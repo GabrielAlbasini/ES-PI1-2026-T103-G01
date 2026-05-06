@@ -12,6 +12,7 @@ try:
 except mysql.connector.Error as err:
     print("Erro ao conectar no banco:", err)
 
+
 # ELEITOR
 
 def inserir_eleitor(nome, cpf, titulo, mesario, chave):
@@ -115,7 +116,9 @@ def resetar_votacao():
     cursor.execute("DELETE FROM voto")
     cursor.execute("UPDATE eleitor SET status_voto = 'NAO_VOTOU'")
 
+
 # CONTROLE DA VOTAÇÃO
+
 
 def abrir_votacao():
     cursor.execute("UPDATE controle_votacao SET status = 'ABERTA' WHERE id = 1")
@@ -127,7 +130,29 @@ def fechar_votacao():
 
 def obter_status_votacao():
     cursor.execute("SELECT status FROM controle_votacao WHERE id = 1")
-    return cursor.fetchone()["status"]
+    resultado = cursor.fetchone()
+    return resultado["status"] if resultado else "FECHADA"
+
+
+# AUDITORIA
+
+def listar_logs():
+    cursor.execute("""
+        SELECT data_hora, descricao 
+        FROM log_ocorrencias 
+        ORDER BY data_hora DESC
+    """)
+    return cursor.fetchall()
+
+
+def listar_protocolos():
+    cursor.execute("""
+        SELECT protocolo, data_hora, id_candidato 
+        FROM voto 
+        ORDER BY data_hora DESC
+    """)
+    return cursor.fetchall()
+
 
 # TRANSAÇÃO
 
