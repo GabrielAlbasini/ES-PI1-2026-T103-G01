@@ -93,3 +93,53 @@ def registrar_voto():
         desfazer()
         registrar(f"Erro ao registrar voto: {erro}")
         print("Erro ao registrar voto:", erro)
+
+
+def encerrar_votacao():
+    print("\n--- ENCERRAMENTO DA VOTAÇÃO ---")
+
+    titulo = input("Título do mesário: ").strip()
+    chave = input("Chave de acesso: ").strip()
+
+    if not titulo or not chave:
+        print("Preencha título e chave.")
+        return
+
+    try:
+        mesario = buscar_eleitor_login(titulo, chave)
+
+        if not mesario:
+            registrar("ALERTA: Tentativa de encerramento com dados inválidos")
+            print("Dados inválidos.")
+            return
+
+        if not mesario["mesario"]:
+            registrar(f"ALERTA: Usuário sem permissão tentou encerrar ({mesario['nome_completo']})")
+            print("Apenas mesários podem encerrar a votação.")
+            return
+
+        confirm = input("Deseja realmente encerrar a votação? (S/N): ").lower()
+
+        if confirm != 's':
+            print("Encerramento cancelado.")
+            return
+
+        chave2 = input("Digite novamente a chave: ").strip()
+
+        if chave2 != chave:
+            registrar("ALERTA: Falha na dupla confirmação de encerramento")
+            print("Chave incorreta. Encerramento cancelado.")
+            return
+
+        agora = datetime.now()
+
+        inserir_log(agora, "ENCERRAMENTO: Votação finalizada com sucesso")
+        registrar("ENCERRAMENTO: votação encerrada com sucesso")
+        salvar()
+
+        print("Votação encerrada com sucesso!")
+
+    except Exception as erro:
+        desfazer()
+        registrar(f"Erro ao encerrar votação: {erro}")
+        print("Erro ao encerrar votação:", erro)
