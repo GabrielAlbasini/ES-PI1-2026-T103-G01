@@ -1,3 +1,4 @@
+from auditoria import registrar
 from validações import validar_cpf, validar_titulo_eleitor
 from db import (
     inserir_eleitor,
@@ -20,6 +21,7 @@ def cadastrar_eleitor():
     chave = input("Digite a chave de acesso: ").strip()
 
     if not nome or not titulo or not cpf or not chave:
+        registrar("Erro cadastro: campos obrigatórios não preenchidos")
         print("Erro: Todos os campos são obrigatórios!")
         return
 
@@ -28,14 +30,17 @@ def cadastrar_eleitor():
         return
 
     if not validar_cpf(cpf):
+        registrar(f"Erro cadastro: CPF inválido ({cpf})")
         print("Erro: CPF inválido!")
         return
 
     if not validar_titulo_eleitor(titulo):
+        registrar(f"Erro cadastro: Título inválido ({titulo})")
         print("Erro: Título inválido!")
         return
 
     if buscar_por_cpf_ou_titulo(cpf, titulo):
+        registrar(f"Tentativa de cadastro duplicado - título {titulo}")
         print("Erro: Eleitor já cadastrado!")
         return
 
@@ -44,8 +49,10 @@ def cadastrar_eleitor():
     sucesso = inserir_eleitor(nome, cpf, titulo, mesario_bool, chave)
 
     if sucesso:
+        registrar(f"Eleitor cadastrado: {nome} - título {titulo}")
         print("Eleitor cadastrado com sucesso!")
     else:
+        registrar(f"Erro ao cadastrar eleitor: {nome}")
         print("Erro ao cadastrar.")
 
 
@@ -59,12 +66,14 @@ def buscar_eleitor():
     eleitor = buscar_por_titulo(titulo)
 
     if eleitor:
+        registrar(f"Consulta de eleitor: {titulo}")
         print("\nEleitor encontrado:")
         print(f"Nome: {eleitor['nome_completo']}")
         print(f"Título: {eleitor['titulo_eleitor']}")
         print(f"CPF: {eleitor['cpf']}")
         print(f"Status: {eleitor['status_voto']}")
     else:
+        registrar(f"Consulta falha: {titulo}")
         print("Eleitor não encontrado.")
 
 
@@ -97,6 +106,7 @@ def editar_eleitor():
     eleitor = buscar_por_titulo(titulo)
 
     if not eleitor:
+        registrar(f"Tentativa de edição em eleitor inexistente: {titulo}")
         print("Eleitor não encontrado.")
         return
 
@@ -127,8 +137,10 @@ def editar_eleitor():
     sucesso = atualizar_eleitor(nome_final, cpf_final, mesario_final, titulo)
 
     if sucesso:
+        registrar(f"Eleitor atualizado: {titulo}")
         print("Eleitor atualizado com sucesso!")
     else:
+        registrar(f"Erro ao atualizar eleitor: {titulo}")
         print("Erro ao atualizar.")
 
 
@@ -141,18 +153,22 @@ def remover_eleitor():
     eleitor = buscar_por_titulo(titulo)
 
     if not eleitor:
+        registrar(f"Tentativa de remoção de eleitor inexistente: {titulo}")
         print("Eleitor não encontrado.")
         return
 
     confirm = input(f"Tem certeza que deseja remover {eleitor['nome_completo']}? (s/n): ").lower()
 
     if confirm != "s":
+        registrar(f"Remoção cancelada: {titulo}")
         print("Operação cancelada.")
         return
 
     sucesso = remover_por_titulo(titulo)
 
     if sucesso:
+        registrar(f"Eleitor removido: {titulo}")
         print("Eleitor removido com sucesso!")
     else:
+        registrar(f"Erro ao remover eleitor: {titulo}")
         print("Erro ao remover.")
