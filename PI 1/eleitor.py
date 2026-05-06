@@ -1,5 +1,5 @@
 from auditoria import registrar
-from validações import validar_cpf, validar_titulo_eleitor
+from validações import validar_cpf, validar_titulo_eleitor, solicitar_cpf, solicitar_titulo
 from db import (
     inserir_eleitor,
     buscar_por_titulo,
@@ -29,16 +29,17 @@ def gerar_chave_acesso(nome):
 
 
 # CADASTRAR
-
 def cadastrar_eleitor():
     print("\n--- CADASTRO DE ELEITOR ---")
     
     nome = input("Digite o nome: ").strip()
-    titulo = input("Digite o título de eleitor: ").strip()
-    cpf = input("Digite o CPF: ").strip()
+    cpf = solicitar_cpf()
+    titulo = solicitar_titulo()
     mesario = input("É mesário? (s/n): ").strip().lower()
 
-    if not nome or not titulo or not cpf:
+    chave = gerar_chave_acesso()
+
+    if not nome:
         registrar("Erro cadastro: campos obrigatórios não preenchidos")
         print("Erro: Todos os campos são obrigatórios!")
         return
@@ -47,25 +48,9 @@ def cadastrar_eleitor():
         print("Erro: Digite apenas 's' ou 'n'")
         return
 
-    if not validar_cpf(cpf):
-        registrar(f"Erro cadastro: CPF inválido ({cpf})")
-        print("Erro: CPF inválido!")
-        return
-
-    if not validar_titulo_eleitor(titulo):
-        registrar(f"Erro cadastro: Título inválido ({titulo})")
-        print("Erro: Título inválido!")
-        return
-
     if buscar_por_cpf_ou_titulo(cpf, titulo):
         registrar(f"Tentativa de cadastro duplicado - título {titulo}")
         print("Erro: Eleitor já cadastrado!")
-        return
-
-    try:
-        chave = gerar_chave_acesso(nome)
-    except ValueError as e:
-        print(e)
         return
 
     mesario_bool = mesario == "s"
@@ -74,7 +59,7 @@ def cadastrar_eleitor():
 
     if sucesso:
         registrar(f"Eleitor cadastrado: {nome} - título {titulo}")
-        print("\nEleitor cadastrado com sucesso!")
+        print("Eleitor cadastrado com sucesso!")
         print(f"Sua chave de acesso é: {chave}")
         print("Guarde essa chave com segurança!")
     else:
