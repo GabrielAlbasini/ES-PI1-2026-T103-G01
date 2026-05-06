@@ -9,7 +9,7 @@ from db import (
     salvar,
     desfazer
 )
-
+from auditoria import registrar
 from datetime import datetime
 import secrets
 
@@ -26,6 +26,7 @@ def iniciar_votacao():
     if confirm == 's':
         resetar_votacao()
         salvar()
+        registrar("votação reiniciada")
         print("Votação reiniciada com sucesso!")
     else:
         print("Operação cancelada.")
@@ -45,10 +46,12 @@ def registrar_voto():
         eleitor = buscar_eleitor_login(titulo, chave)
 
         if not eleitor:
+            registrar(f"Tentativa de login inválido - título: {titulo}")
             print("Eleitor não encontrado ou chave incorreta.")
             return
 
         if eleitor["status_voto"] == "JA_VOTOU":
+            registrar(f"Tentativa de voto duplicado - eleitor {eleitor['nome_completo']}")
             print("Esse eleitor já votou.")
             return
 
@@ -71,6 +74,7 @@ def registrar_voto():
         candidato = buscar_candidato(int(numero))
 
         if not candidato:
+            registrar(f"Candidato inválido - número {numero}")
             print("Candidato não existe.")
             return
 
@@ -80,11 +84,12 @@ def registrar_voto():
         inserir_voto(candidato["id"], agora, protocolo)
         atualizar_status_eleitor(eleitor["id"])
         inserir_log(agora, f"SUCESSO: voto registrado para {eleitor['nome_completo']}")
-
+        registrar(f"Voto registrado - eleitor: {eleitor['nome_completo']}, candidato: {candidato['nome']}")
         salvar()
 
         print(f"Voto registrado com sucesso! Protocolo: {protocolo}")
 
     except Exception as erro:
         desfazer()
+        registrar(f"Erro ao registrar voto: {erro}")
         print("Erro ao registrar voto:", erro)
