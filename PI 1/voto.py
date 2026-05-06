@@ -1,140 +1,194 @@
-from db import (
-    buscar_eleitor_login,
-    listar_candidatos,
-    buscar_candidato,
-    inserir_voto,
-    atualizar_status_eleitor,
-    inserir_log,
-    resetar_votacao,
-    salvar,
-    desfazer
-)
 from auditoria import registrar
-from datetime import datetime
-import secrets
+from validacoes import validar_cpf, validar_titulo_eleitor
+from db import (
+    inserir_eleitor,
+    buscar_por_titulo,
+    buscar_por_cpf_ou_titulo,
+    listar_todos,
+    atualizar_eleitor,
+    remover_por_titulo
+)
+
+import random
+import string
 
 
-VOTACAO_ATIVA = False
+def gerar_chave_acesso(nome):
+    partes = nome.strip().split()
+
+    if len(partes) < 2:
+        raise ValueError("Digite nome e sobrenome.")
+
+    primeira_parte = partes[0][:2].upper()
+    segunda_letra = partes[1][0].upper()
+    numeros = ''.join(random.choices(string.digits, k=4))
+
+    return primeira_parte + segunda_letra + numeros
 
 
-def gerar_protocolo():
-    return secrets.token_hex(8).upper()
+# CADASTRAR
+def cadastrar_eleitor():
+    print("\n--- CADASTRO DE ELEITOR ---")
+    
+    nome = input("Digite o nome: ").strip()
+    titulo = input("Digite o título de eleitor: ").strip()
+    cpf = input("Digite o CPF: ").strip()
+    mesario = input("É mesário? (s/n): ").strip().lower()
 
+    if not nome or not titulo or not cpf:
+        registrar("Erro cadastro: campos obrigatórios não preenchidos")
+        print("Erro: Todos os campos são obrigatórios!")
+        return
 
-# INICIAR VOTAÇÃO
-def iniciar_votacao():
-    global VOTACAO_ATIVA
+    if mesario not in ["s", "n"]:
+        print("Erro: Digite apenas 's' ou 'n'")
+        return
 
-    print("\n--- INICIAR VOTAÇÃO ---")
+    if not validar_cpf(cpf):
+        registrar(f"Erro cadastro: CPF inválido ({cpf})")
+        print("Erro: CPF inválido!")
+        return
 
-    confirm = input("Deseja iniciar uma nova votação? (s/n): ").lower()
+    if not validar_titulo_eleitor(titulo):
+        registrar(f"Erro cadastro: Título inválido ({titulo})")
+        print("Erro: Título inválido!")
+        return
 
-    if confirm == 's':
-        try:
-            resetar_votacao()
-            VOTACAO_ATIVA = True
-            salvar()
-            registrar("votação iniciada/reiniciada")
-            print("Votação iniciada com sucesso!")
-        except Exception as erro:
-            desfazer()
-            registrar(f"Erro ao iniciar votação: {erro}")
-            print("Erro ao iniciar votação:", erro)
+    if buscar_por_cpf_ou_titulo(cpf, titulo):
+        registrar(f"Tentativa de cadastro duplicado - título {titulo}")
+        print("Erro: Eleitor já cadastrado!")
+        return
+
+    try:
+        chave = gerar_chave_acesso(nome)
+    except ValueError as e:
+        print(e)
+        return
+
+    mesario_bool = mesario == "s"
+
+    sucesso = inserir_eleitor(nome, cpf, titulo, mesario_bool, chave)
+
+    if sucesso:
+        registrar(f"Eleitor cadastrado: {nome} - título {titulo}")
+        print("Eleitor cadastrado com sucesso!")
+        print(f"Sua chave de acesso é: {chave}")
+        print("Guarde essa chave com segurança!")
     else:
+        registrar(f"Erro ao cadastrar eleitor: {nome}")
+        print("Erro ao cadastrar.")
+
+
+# BUSCAR
+def buscar_eleitor():
+    print("\n--- BUSCAR ELEITOR ---")
+
+    titulo = input("Digite o título do eleitor: ").strip()
+
+    eleitor = buscar_por_titulo(titulo)
+
+    if eleitor:
+        registrar(f"Consulta de eleitor: {titulo}")
+        print("\nEleitor encontrado:")
+        print(f"Nome: {eleitor['nome_completo']}")
+        print(f"Título: {eleitor['titulo_eleitor']}")
+        print(f"CPF: {eleitor['cpf']}")
+        print(f"Status: {eleitor['status_voto']}")
+    else:
+        registrar(f"Consulta falha: {titulo}")
+        print("Eleitor não encontrado.")
+
+
+# LISTAR
+def listar_eleitores():
+    print("\n--- LISTA DE ELEITORES ---")
+
+    eleitores = listar_todos()
+
+    if eleitores:
+        for e in eleitores:
+            print("\n----------")
+            print(f"Nome: {e['nome_completo']}")
+            print(f"Título: {e['titulo_eleitor']}")
+            print(f"CPF: {e['cpf']}")
+            print(f"Mesário: {'Sim' if e['mesario'] else 'Não'}")
+            print(f"Status: {e['status_voto']}")
+    else:
+        print("Nenhum eleitor cadastrado.")
+
+
+# EDITAR
+def editar_eleitor():
+    print("\n- EDITAR ELEITOR -")
+
+    titulo = input("Digite o título: ").strip()
+
+    eleitor = buscar_por_titulo(titulo)
+
+    if not eleitor:
+        registrar(f"Tentativa de edição em eleitor inexistente: {titulo}")
+        print("Eleitor não encontrado.")
+        return
+
+    print("\nDeixe em branco para manter o valor atual.\n")
+
+    novo_nome = input(f"Nome ({eleitor['nome_completo']}): ").strip()
+    novo_cpf = input(f"CPF ({eleitor['cpf']}): ").strip()
+    mesario_atual = 's' if eleitor['mesario'] else 'n'
+    novo_mesario = input(f"É mesário? (s/n) [{mesario_atual}]: ").strip().lower()
+
+    if novo_mesario and novo_mesario not in ["s", "n"]:
+        print("Erro: use apenas 's' ou 'n'")
+        return
+
+    if novo_cpf:
+        if not validar_cpf(novo_cpf):
+            print("Erro: CPF inválido!")
+            return
+
+    nome_final = novo_nome if novo_nome else eleitor['nome_completo']
+    cpf_final = novo_cpf if novo_cpf else eleitor['cpf']
+
+    if novo_mesario:
+        mesario_final = novo_mesario == "s"
+    else:
+        mesario_final = eleitor['mesario']
+
+    sucesso = atualizar_eleitor(nome_final, cpf_final, mesario_final, titulo)
+
+    if sucesso:
+        registrar(f"Eleitor atualizado: {titulo}")
+        print("Eleitor atualizado com sucesso!")
+    else:
+        registrar(f"Erro ao atualizar eleitor: {titulo}")
+        print("Erro ao atualizar.")
+
+
+# REMOVER
+def remover_eleitor():
+    print("\n--- REMOVER ELEITOR ---")
+
+    titulo = input("Digite o título: ").strip()
+
+    eleitor = buscar_por_titulo(titulo)
+
+    if not eleitor:
+        registrar(f"Tentativa de remoção de eleitor inexistente: {titulo}")
+        print("Eleitor não encontrado.")
+        return
+
+    confirm = input(f"Tem certeza que deseja remover {eleitor['nome_completo']}? (s/n): ").lower()
+
+    if confirm != "s":
+        registrar(f"Remoção cancelada: {titulo}")
         print("Operação cancelada.")
-
-
-# ENCERRAR VOTAÇÃO
-def encerrar_votacao():
-    global VOTACAO_ATIVA
-
-    print("\n--- ENCERRAR VOTAÇÃO ---")
-
-    confirm = input("Deseja encerrar a votação? (s/n): ").lower()
-
-    if confirm != 's':
-        print("Operação cancelada.")
         return
 
-    try:
-        VOTACAO_ATIVA = False
-        agora = datetime.now()
+    sucesso = remover_por_titulo(titulo)
 
-        inserir_log(agora, "Votação encerrada")
-        registrar("votação encerrada")
-        salvar()
-
-        print("Votação encerrada com sucesso!")
-
-    except Exception as erro:
-        desfazer()
-        registrar(f"Erro ao encerrar votação: {erro}")
-        print("Erro ao encerrar votação:", erro)
-
-
-# REGISTRAR VOTO
-def registrar_voto():
-    print("\n--- REGISTRO DE VOTO ---")
-
-    if not VOTACAO_ATIVA:
-        print("A votação não está ativa.")
-        return
-
-    titulo = input("Título de eleitor: ").strip()
-    chave = input("Chave de acesso: ").strip()
-
-    if not titulo or not chave:
-        print("Preencha título e chave.")
-        return
-
-    try:
-        eleitor = buscar_eleitor_login(titulo, chave)
-
-        if not eleitor:
-            registrar(f"Tentativa de login inválido - título: {titulo}")
-            print("Eleitor não encontrado ou chave incorreta.")
-            return
-
-        if eleitor["status_voto"] == "JA_VOTOU":
-            registrar(f"Tentativa de voto duplicado - eleitor {eleitor['nome_completo']}")
-            print("Esse eleitor já votou.")
-            return
-
-        candidatos = listar_candidatos()
-
-        if not candidatos:
-            print("Nenhum candidato cadastrado.")
-            return
-
-        print("\nCandidatos:")
-        for c in candidatos:
-            print(f"{c['numero']} - {c['nome']} ({c['partido']})")
-
-        numero = input("Digite o número do candidato: ").strip()
-
-        if not numero.isdigit():
-            print("Número inválido.")
-            return
-
-        candidato = buscar_candidato(int(numero))
-
-        if not candidato:
-            registrar(f"Candidato inválido - número {numero}")
-            print("Candidato não existe.")
-            return
-
-        agora = datetime.now()
-        protocolo = gerar_protocolo()
-
-        inserir_voto(candidato["id"], agora, protocolo)
-        atualizar_status_eleitor(eleitor["id"])
-        inserir_log(agora, f"SUCESSO: voto registrado para {eleitor['nome_completo']}")
-        registrar(f"Voto registrado - eleitor: {eleitor['nome_completo']}, candidato: {candidato['nome']}")
-        salvar()
-
-        print(f"Voto registrado com sucesso! Protocolo: {protocolo}")
-
-    except Exception as erro:
-        desfazer()
-        registrar(f"Erro ao registrar voto: {erro}")
-        print("Erro ao registrar voto:", erro)
+    if sucesso:
+        registrar(f"Eleitor removido: {titulo}")
+        print("Eleitor removido com sucesso!")
+    else:
+        registrar(f"Erro ao remover eleitor: {titulo}")
+        print("Erro ao remover.")
