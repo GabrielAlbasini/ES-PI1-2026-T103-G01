@@ -13,27 +13,70 @@ from auditoria import registrar
 from datetime import datetime
 import secrets
 
+votacao_aberta = False
+
 
 def gerar_protocolo():
     return secrets.token_hex(8).upper()
 
 
+# =========================
+# INICIAR VOTAÇÃO
+# =========================
 def iniciar_votacao():
+    global votacao_aberta
+
     print("\n--- INICIAR VOTAÇÃO ---")
 
     confirm = input("Deseja iniciar uma nova votação? (s/n): ").lower()
 
     if confirm == 's':
-        resetar_votacao()
-        salvar()
-        registrar("votação reiniciada")
-        print("Votação reiniciada com sucesso!")
+        try:
+            resetar_votacao()
+            salvar()
+            votacao_aberta = True
+            registrar("votação iniciada")
+            print("Votação iniciada com sucesso!")
+        except Exception as erro:
+            desfazer()
+            print("Erro ao iniciar votação:", erro)
     else:
         print("Operação cancelada.")
 
 
+# =========================
+# ENCERRAR VOTAÇÃO
+# =========================
+def encerrar_votacao():
+    global votacao_aberta
+
+    print("\n--- ENCERRAR VOTAÇÃO ---")
+
+    if not votacao_aberta:
+        print("A votação já está encerrada.")
+        return
+
+    confirm = input("Deseja realmente encerrar a votação? (s/n): ").lower()
+
+    if confirm != "s":
+        print("Operação cancelada.")
+        return
+
+    votacao_aberta = False
+    registrar("votação encerrada")
+    print("Votação encerrada com sucesso!")
+
+
+# =========================
+# REGISTRAR VOTO
+# =========================
 def registrar_voto():
     print("\n--- REGISTRO DE VOTO ---")
+
+    # 🔒 BLOQUEIO
+    if not votacao_aberta:
+        print("A votação está encerrada!")
+        return
 
     titulo = input("Título de eleitor: ").strip()
     chave = input("Chave de acesso: ").strip()
@@ -78,6 +121,12 @@ def registrar_voto():
             print("Candidato não existe.")
             return
 
+        confirm = input(f"Confirmar voto em {candidato['nome']}? (s/n): ").lower()
+
+        if confirm != "s":
+            print("Voto cancelado.")
+            return
+
         agora = datetime.now()
         protocolo = gerar_protocolo()
 
@@ -87,7 +136,8 @@ def registrar_voto():
         registrar(f"Voto registrado - eleitor: {eleitor['nome_completo']}, candidato: {candidato['nome']}")
         salvar()
 
-        print(f"Voto registrado com sucesso! Protocolo: {protocolo}")
+        print(f"\nVoto registrado com sucesso!")
+        print(f"Protocolo: {protocolo}")
 
     except Exception as erro:
         desfazer()

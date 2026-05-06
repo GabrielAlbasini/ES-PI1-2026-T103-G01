@@ -8,6 +8,7 @@ from eleitor import (
 from voto import (
     iniciar_votacao,
     registrar_voto,
+    encerrar_votacao
 ) 
 
 def menu_eleitor():
@@ -145,7 +146,7 @@ def sistema_votacao():
         elif opcao == "2":
             registrar_voto()
         elif opcao == "3":
-            print("Encerrando votação...")
+            encerrar_votacao()
         elif opcao == "0":
             print("Voltando...")
         else:
