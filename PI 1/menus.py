@@ -10,6 +10,10 @@ from voto import (
     registrar_voto,
     encerrar_votacao
 ) 
+from auditoria import (
+    exibir_logs,
+    exibir_protocolos
+)
 
 def menu_eleitor():
     opcao = ""
@@ -96,9 +100,9 @@ def menu_auditoria():
         opcao = input("Escolha: ")
 
         if opcao == "1":
-            print("Exibindo logs...")
+            exibir_logs()
         elif opcao == "2":
-            print("Exibindo protocolos...")
+            exibir_protocolos()
         elif opcao == "0":
             print("Voltando...")
         else:
