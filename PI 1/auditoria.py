@@ -36,6 +36,6 @@ def exibir_protocolos():
         print("\n----------")
         print(f"Protocolo: {p['protocolo']}")
         print(f"Data/Hora: {p['data_hora']}")
-        print(f"Candidato ID: {p['candidato_id']}")
+        print(f"Candidato ID: {p['id_candidato']}")
 
 
