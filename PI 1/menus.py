@@ -15,6 +15,13 @@ from auditoria import (
     exibir_protocolos
 )
 
+from resultadoVotacao import (
+    boletim_urna,
+    estatisticas_comparecimento,
+    votos_por_partido,
+    validacao_integridade
+)
+
 def menu_eleitor():
     opcao = ""
     while opcao != "0":
@@ -122,13 +129,13 @@ def menu_resultados():
         opcao = input("Escolha: ")
 
         if opcao == "1":
-            print("Boletim de urna...")
+            boletim_urna()
         elif opcao == "2":
-            print("Estatísticas...")
+            estatisticas_comparecimento() 
         elif opcao == "3":
-            print("Votos por partido...")
+            votos_por_partido
         elif opcao == "4":
-            print("Validação de integridade...")
+            validacao_integridade()
         elif opcao == "0":
             print("Voltando...")
         else:
