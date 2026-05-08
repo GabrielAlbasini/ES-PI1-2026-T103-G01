@@ -147,7 +147,7 @@ def listar_logs():
 
 def listar_protocolos():
     cursor.execute("""
-        SELECT protocolo, data_hora, id_candidato 
+        SELECT protocolo, data_hora, id_candidato
         FROM voto 
         ORDER BY data_hora DESC
     """)
