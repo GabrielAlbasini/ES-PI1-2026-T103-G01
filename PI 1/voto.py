@@ -20,9 +20,8 @@ def gerar_protocolo():
     return secrets.token_hex(8).upper()
 
 
-# =========================
 # INICIAR VOTAÇÃO
-# =========================
+
 def iniciar_votacao():
     global votacao_aberta
 
@@ -44,9 +43,8 @@ def iniciar_votacao():
         print("Operação cancelada.")
 
 
-# =========================
 # ENCERRAR VOTAÇÃO
-# =========================
+
 def encerrar_votacao():
     global votacao_aberta
 
@@ -67,13 +65,11 @@ def encerrar_votacao():
     print("Votação encerrada com sucesso!")
 
 
-# =========================
 # REGISTRAR VOTO
-# =========================
+
 def registrar_voto():
     print("\n--- REGISTRO DE VOTO ---")
 
-    # 🔒 BLOQUEIO
     if not votacao_aberta:
         print("A votação está encerrada!")
         return
