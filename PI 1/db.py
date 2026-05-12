@@ -4,9 +4,10 @@ try:
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="123456",
+        password="Lobo2404$",
         database="sistema_votacao"
     )
+
     cursor = conn.cursor(dictionary=True)
 
 except mysql.connector.Error as err:
