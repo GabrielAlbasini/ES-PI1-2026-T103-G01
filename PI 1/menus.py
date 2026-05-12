@@ -48,34 +48,6 @@ def menu_eleitor():
         elif opcao == '0':
             print("Voltando...")
 
-
-def menu_candidato():
-    opcao = ""
-    while opcao != "0":
-        print("\n--- CANDIDATO ---")
-        print("1 - Cadastrar candidato")
-        print("2 - Buscar candidato")
-        print("3 - Listar candidatos")
-        print("4 - Editar candidato")
-        print("5 - Remover candidato")
-        print("0 - Voltar")
-
-        opcao = input("Escolha: ")
-
-        if opcao == "1":
-            cadastrar_candidato()
-        elif opcao == "2":
-            buscar_candidato()
-        elif opcao == "3":
-            listar_candidatos()
-        elif opcao == "4":
-            editar_candidato()
-        elif opcao == "5":
-            remover_candidato()
-        elif opcao == "0":
-            print("Voltando...")
-
-
 def menu_gerenciamento():
     opcao = ""
     while opcao != "0":
@@ -88,8 +60,6 @@ def menu_gerenciamento():
 
         if opcao == '1':
             menu_eleitor()
-        elif opcao == '2':
-            menu_candidato()
         elif opcao == '0':
             print("Voltando...")
         else:
