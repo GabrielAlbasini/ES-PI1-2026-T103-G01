@@ -131,7 +131,7 @@ def menu_resultados():
         if opcao == "1":
             boletim_urna()
         elif opcao == "2":
-            estatisticas_comparecimento() 
+            estatisticas_comparecimento()
         elif opcao == "3":
             votos_por_partido
         elif opcao == "4":

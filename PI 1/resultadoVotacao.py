@@ -59,4 +59,44 @@ def boletim_urna():
     except Exception as erro:
         print("Erro ao gerar boletim de urna:", erro)
 
+# =========================================
+# ESTATÍSTICAS DE COMPARECIMENTO
+# =========================================
+def estatisticas_comparecimento():
+ 
+    print("\n===== ESTATÍSTICAS DE COMPARECIMENTO =====")
+
+    try:
+        # Total de eleitores cadastrados
+        cursor.execute("SELECT COUNT(*) AS total FROM eleitor")
+        total_eleitores = cursor.fetchone()["total"]
+
+        # Total de eleitores que votaram
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM eleitor
+            WHERE status_voto = 'JA_VOTOU'
+        """)
+
+        total_votaram = cursor.fetchone()["total"]
+
+        # Total de abstenções
+        abstencoes = total_eleitores - total_votaram
+
+        # Percentual
+        percentual = 0
+
+        if total_eleitores > 0:
+            percentual = (total_votaram / total_eleitores) * 100
+
+        print(f"Total de eleitores aptos: {total_eleitores}")
+        print(f"Total de comparecimento: {total_votaram}")
+        print(f"Total de abstenções: {abstencoes}")
+        print(f"Percentual de comparecimento: {percentual:.2f}%")
+
+    except Exception as erro:
+        print("Erro ao gerar estatísticas:", erro)
+
+
+
 
