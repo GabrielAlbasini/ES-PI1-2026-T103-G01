@@ -1,6 +1,5 @@
 from db import (
     buscar_eleitor_login,
-    listar_candidatos,
     buscar_candidato,
     inserir_voto,
     atualizar_status_eleitor,
@@ -144,15 +143,6 @@ def registrar_voto():
             print("Esse eleitor já votou.")
             return
 
-        candidatos = listar_candidatos()
-
-        if not candidatos:
-            print("Nenhum candidato cadastrado.")
-            return
-
-        print("\nCandidatos:")
-        for c in candidatos:
-            print(f"{c['numero']} - {c['nome']} ({c['partido']})")
 
         numero = input("Digite o número do candidato: ").strip()
 
