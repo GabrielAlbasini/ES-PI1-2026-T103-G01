@@ -34,7 +34,7 @@ def iniciar_votacao():
             resetar_votacao()
             salvar()
             votacao_aberta = True
-            registrar("votação iniciada")
+            registrar("ABERTURA: Votação iniciada com sucesso. Total de votos zerado.")
             print("Votação iniciada com sucesso!")
         except Exception as erro:
             desfazer()
@@ -61,7 +61,7 @@ def encerrar_votacao():
         return
 
     votacao_aberta = False
-    registrar("votação encerrada")
+    registrar("ENCERRAMENTO: Votação finalizada com sucesso.")
     print("Votação encerrada com sucesso!")
 
 
@@ -85,12 +85,12 @@ def registrar_voto():
         eleitor = buscar_eleitor_login(titulo, chave)
 
         if not eleitor:
-            registrar(f"Tentativa de login inválido - título: {titulo}")
+            registrar("ALERTA: Tentativa de acesso negado")
             print("Eleitor não encontrado ou chave incorreta.")
             return
 
         if eleitor["status_voto"] == "JA_VOTOU":
-            registrar(f"Tentativa de voto duplicado - eleitor {eleitor['nome_completo']}")
+            registrar("ALERTA: Tentativa de voto duplo")
             print("Esse eleitor já votou.")
             return
 
@@ -113,7 +113,6 @@ def registrar_voto():
         candidato = buscar_candidato(int(numero))
 
         if not candidato:
-            registrar(f"Candidato inválido - número {numero}")
             print("Candidato não existe.")
             return
 
@@ -129,7 +128,7 @@ def registrar_voto():
         inserir_voto(candidato["id"], agora, protocolo)
         atualizar_status_eleitor(eleitor["id"])
         inserir_log(agora, f"SUCESSO: voto registrado para {eleitor['nome_completo']}")
-        registrar(f"Voto registrado - eleitor: {eleitor['nome_completo']}, candidato: {candidato['nome']}")
+        registrar("SUCESSO: Voto realizado com sucesso")
         salvar()
 
         print(f"\nVoto registrado com sucesso!")
@@ -137,5 +136,4 @@ def registrar_voto():
 
     except Exception as erro:
         desfazer()
-        registrar(f"Erro ao registrar voto: {erro}")
         print("Erro ao registrar voto:", erro)
