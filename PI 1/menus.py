@@ -103,7 +103,7 @@ def menu_resultados():
         elif opcao == "2":
             estatisticas_comparecimento()
         elif opcao == "3":
-            votos_por_partido
+            votos_por_partido()
         elif opcao == "4":
             validacao_integridade()
         elif opcao == "0":

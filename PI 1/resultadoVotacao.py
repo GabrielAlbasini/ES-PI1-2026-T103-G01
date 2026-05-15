@@ -97,6 +97,38 @@ def estatisticas_comparecimento():
     except Exception as erro:
         print("Erro ao gerar estatísticas:", erro)
 
+# =========================================
+# VOTOS POR PARTIDO
+# =========================================
+def votos_por_partido():
+
+    print("\n===== VOTOS POR PARTIDO =====")
+
+    try:
+        cursor.execute("""
+            SELECT
+                c.partido,
+                COUNT(v.id) AS total_votos
+            FROM candidato c
+            LEFT JOIN voto v
+                ON c.id = v.id_candidato
+            GROUP BY c.partido
+            ORDER BY total_votos DESC
+        """)
+
+        partidos = cursor.fetchall()
+
+        if not partidos:
+            print("Nenhum partido encontrado.")
+            return
+
+        for partido in partidos:
+            print(f"Partido: {partido['partido']}")
+            print(f"Total de votos: {partido['total_votos']}")
+            print("-" * 35)
+
+    except Exception as erro:
+        print("Erro ao gerar votos por partido:", erro)
 
 
 
