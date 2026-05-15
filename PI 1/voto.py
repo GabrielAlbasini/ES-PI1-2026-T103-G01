@@ -9,6 +9,7 @@ from db import (
     salvar,
     desfazer
 )
+from validações import solicitar_cpf_parcial
 from auditoria import registrar
 from datetime import datetime
 import secrets
@@ -75,18 +76,22 @@ def registrar_voto():
         return
 
     titulo = input("Título de eleitor: ").strip()
-    chave = input("Chave de acesso: ").strip()
+    cpf_parcial = solicitar_cpf_parcial()
 
-    if not titulo or not chave:
-        print("Preencha título e chave.")
+    if not titulo or not cpf_parcial:
         return
 
     try:
-        eleitor = buscar_eleitor_login(titulo, chave)
+        eleitor = buscar_eleitor_login(titulo)
 
         if not eleitor:
             registrar("ALERTA: Tentativa de acesso negado")
-            print("Eleitor não encontrado ou chave incorreta.")
+            print("Eleitor não encontrado.")
+            return
+
+        if eleitor["cpf"][:4] != cpf_parcial:
+            registrar("ALERTA: Tentativa de acesso negado")
+            print("CPF incorreto.")
             return
 
         if eleitor["status_voto"] == "JA_VOTOU":

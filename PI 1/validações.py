@@ -107,6 +107,15 @@ def solicitar_cpf():
             return cpf
         print("CPF inválido! Digite novamente.")
 
+def solicitar_cpf_parcial():
+    while True:
+        cpf = input("Digite os 4 primeiros dígitos do CPF: ").strip()
+
+        if cpf.isdigit() and len(cpf) == 4:
+            return cpf
+
+        print("Digite exatamente 4 números.")
+
 
 # --- SOlicitar titulo com loop de validação ---
 def solicitar_titulo():
