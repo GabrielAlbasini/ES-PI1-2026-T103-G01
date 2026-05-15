@@ -6,6 +6,7 @@ from db import (
     atualizar_status_eleitor,
     inserir_log,
     resetar_votacao,
+    buscar_por_titulo,
     salvar,
     desfazer
 )
@@ -28,6 +29,26 @@ def iniciar_votacao():
 
     print("\n--- INICIAR VOTAÇÃO ---")
 
+    titulo = input("Título do mesário: ").strip()
+    cpf_parcial = solicitar_cpf_parcial()
+
+    eleitor = buscar_por_titulo(titulo)
+
+    if not eleitor:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("Mesário não encontrado.")
+        return
+
+    if eleitor["cpf"][:4] != cpf_parcial:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("CPF incorreto.")
+        return
+
+    if not eleitor["mesario"]:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("Apenas mesários podem iniciar a votação.")
+        return
+
     confirm = input("Deseja iniciar uma nova votação? (s/n): ").lower()
 
     if confirm == 's':
@@ -35,14 +56,17 @@ def iniciar_votacao():
             resetar_votacao()
             salvar()
             votacao_aberta = True
+
             registrar("ABERTURA: Votação iniciada com sucesso. Total de votos zerado.")
+
             print("Votação iniciada com sucesso!")
+
         except Exception as erro:
             desfazer()
             print("Erro ao iniciar votação:", erro)
+
     else:
         print("Operação cancelada.")
-
 
 # ENCERRAR VOTAÇÃO
 
@@ -55,6 +79,26 @@ def encerrar_votacao():
         print("A votação já está encerrada.")
         return
 
+    titulo = input("Título do mesário: ").strip()
+    cpf_parcial = solicitar_cpf_parcial()
+
+    eleitor = buscar_por_titulo(titulo)
+
+    if not eleitor:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("Mesário não encontrado.")
+        return
+
+    if eleitor["cpf"][:4] != cpf_parcial:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("CPF incorreto.")
+        return
+
+    if not eleitor["mesario"]:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("Apenas mesários podem encerrar a votação.")
+        return
+
     confirm = input("Deseja realmente encerrar a votação? (s/n): ").lower()
 
     if confirm != "s":
@@ -62,9 +106,10 @@ def encerrar_votacao():
         return
 
     votacao_aberta = False
-    registrar("ENCERRAMENTO: Votação finalizada com sucesso.")
-    print("Votação encerrada com sucesso!")
 
+    registrar("ENCERRAMENTO: Votação finalizada com sucesso.")
+
+    print("Votação encerrada com sucesso!")
 
 # REGISTRAR VOTO
 
