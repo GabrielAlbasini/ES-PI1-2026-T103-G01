@@ -1,99 +1,173 @@
-import numpy as np
-
-CHAVE = np.array([[3, 3],
-                  [2, 5]])
+CHAVE = [[3, 3],
+         [2, 5]]
 
 MOD = 26
 
 
 def texto_para_numeros(texto):
-  
-# Converte texto em números (A=0, B=1, ..., Z=25).
 
     texto = texto.upper().replace(" ", "")
+
     return [ord(c) - ord('A') for c in texto if c.isalpha()]
 
 
 def numeros_para_texto(numeros):
-
-# Converte números em texto (0=A, 1=B, ..., 25=Z).
-
 
     return ''.join([chr(n + ord('A')) for n in numeros])
 
 
 def ajustar_texto(texto):
 
-# Ajusta o texto para ter tamanho par.
-
     if len(texto) % 2 != 0:
         texto += 'X'
+
     return texto
 
 
 def numero_para_letra(texto):
 
-# Converte números em letras (0=A, ..., 9=J).
+    resultado = ""
 
-    return ''.join([chr(int(d) + 65) for d in texto if d.isdigit()])
+    for caractere in texto:
+
+        if caractere.isdigit():
+            resultado += chr(int(caractere) + 65)
+
+        else:
+            resultado += caractere.upper()
+
+    return resultado
 
 
 def letra_para_numero(texto):
 
-# Converte letras em números (A=0, ..., J=9).
+    resultado = ""
 
-    return ''.join([str(ord(c) - 65) for c in texto])
+    for caractere in texto:
+
+        valor = ord(caractere.upper()) - 65
+
+        if 0 <= valor <= 9:
+            resultado += str(valor)
+
+        else:
+            resultado += caractere
+
+    return resultado
 
 
-def criptografar_hill(texto):
+def multiplicar_matriz(matriz, bloco):
 
-# Criptografa um texto usando a Cifra de Hill.
-
-    texto = ajustar_texto(texto)
-    numeros = texto_para_numeros(texto)
     resultado = []
 
-    for i in range(0, len(numeros), 2):
-        bloco = np.array([[numeros[i]],
-                          [numeros[i + 1]]])
+    for i in range(2):
 
-        criptografado = np.dot(CHAVE, bloco) % MOD
-        resultado.extend(criptografado.flatten())
+        valor = (
+            matriz[i][0] * bloco[0] +
+            matriz[i][1] * bloco[1]
+        ) % MOD
 
-    return numeros_para_texto(resultado)
+        resultado.append(valor)
+
+    return resultado
+
+
+def inversa_modular(numero):
+
+    numero = numero % MOD
+
+    for i in range(1, MOD):
+
+        if (numero * i) % MOD == 1:
+            return i
+
+    return None
 
 
 def inversa_modular_matriz(matriz):
 
-# Calcula a inversa modular da matriz 2x2 no módulo 26.
+    a = matriz[0][0]
+    b = matriz[0][1]
+    c = matriz[1][0]
+    d = matriz[1][1]
 
-    det = int(np.round(np.linalg.det(matriz)))
-    det_mod = det % MOD
+    det = (a * d - b * c) % MOD
 
-    for i in range(1, MOD):
-        if (det_mod * i) % MOD == 1:
-            det_inv = i
-            break
+    det_inv = inversa_modular(det)
 
-    adj = np.array([[matriz[1][1], -matriz[0][1]],
-                    [-matriz[1][0], matriz[0][0]]])
+    adjunta = [[d, -b],
+               [-c, a]]
 
-    return (det_inv * adj) % MOD
+    inversa = []
+
+    for linha in adjunta:
+
+        nova_linha = []
+
+        for valor in linha:
+
+            novo_valor = (det_inv * valor) % MOD
+
+            nova_linha.append(novo_valor)
+
+        inversa.append(nova_linha)
+
+    return inversa
+
+
+def criptografar_hill(texto):
+
+    texto = numero_para_letra(texto)
+
+    texto = ajustar_texto(texto)
+
+    numeros = texto_para_numeros(texto)
+
+    resultado = []
+
+    for i in range(0, len(numeros), 2):
+
+        bloco = [numeros[i],
+                 numeros[i + 1]]
+
+        criptografado = multiplicar_matriz(CHAVE, bloco)
+
+        resultado.extend(criptografado)
+
+    return numeros_para_texto(resultado)
 
 
 def descriptografar_hill(texto):
 
-# Descriptografa um texto usando a Cifra de Hill.
-
     numeros = texto_para_numeros(texto)
-    chave_inv = inversa_modular_matriz(CHAVE)
+
+    chave_inversa = inversa_modular_matriz(CHAVE)
+
     resultado = []
 
     for i in range(0, len(numeros), 2):
-        bloco = np.array([[numeros[i]],
-                          [numeros[i + 1]]])
 
-        descriptografado = np.dot(chave_inv, bloco) % MOD
-        resultado.extend(descriptografado.flatten())
+        bloco = [numeros[i],
+                 numeros[i + 1]]
 
-    return numeros_para_texto(resultado)
+        descriptografado = multiplicar_matriz(chave_inversa, bloco)
+
+        resultado.extend(descriptografado)
+
+    texto_final = numeros_para_texto(resultado)
+
+    texto_final = letra_para_numero(texto_final)
+
+    return texto_final
+
+
+cpf = "12345678901"
+
+cpf_criptografado = criptografar_hill(cpf)
+
+print("CPF Original:", cpf)
+print("CPF Criptografado:", cpf_criptografado)
+
+cpf_descriptografado = descriptografar_hill(cpf_criptografado)
+
+print("CPF Descriptografado:", cpf_descriptografado)
