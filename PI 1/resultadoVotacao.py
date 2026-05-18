@@ -131,4 +131,42 @@ def votos_por_partido():
         print("Erro ao gerar votos por partido:", erro)
 
 
+# =========================================
+# VALIDAÇÃO DE INTEGRIDADE
+# =========================================
+def validacao_integridade():
+   
+
+    print("\n===== VALIDAÇÃO DE INTEGRIDADE =====")
+
+    try:
+        # Total de votos registrados
+        cursor.execute("SELECT COUNT(*) AS total FROM voto")
+        total_votos = cursor.fetchone()["total"]
+
+        # Total de eleitores que votaram
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM eleitor
+            WHERE status_voto = 'JA_VOTOU'
+        """)
+
+        total_eleitores_votaram = cursor.fetchone()["total"]
+
+        print(f"Total de votos registrados: {total_votos}")
+        print(f"Total de eleitores com status JA_VOTOU: {total_eleitores_votaram}")
+
+        print("\n===== RESULTADO DA VALIDAÇÃO =====")
+
+        if total_votos == total_eleitores_votaram:
+            print("INTEGRIDADE CONFIRMADA")
+            print("Nenhuma inconsistência encontrada.")
+        else:
+            print("FALHA DE INTEGRIDADE DETECTADA")
+            print("A quantidade de votos não corresponde aos eleitores que votaram.")
+
+    except Exception as erro:
+        print("Erro na validação de integridade:", erro)
+
+
 
