@@ -1,6 +1,6 @@
 from db import (
-    buscar_eleitor_login,
     buscar_candidato,
+    listar_candidatos,
     inserir_voto,
     atualizar_status_eleitor,
     inserir_log,
@@ -10,25 +10,23 @@ from db import (
     desfazer
 )
 from validações import solicitar_cpf_parcial
-from eleitor import gerar_chave_acesso
 from auditoria import registrar
 from datetime import datetime
 import secrets
+import string
 
 votacao_aberta = False
 
 
-def gerar_protocolo():
-    return secrets.token_hex(8).upper()
+def gerar_protocolo(numero_candidato):
+    letras = ''.join(secrets.choice(string.ascii_uppercase) for _ in range(2))
+    ano = datetime.now().strftime("%y")
+    num_candidato = str(numero_candidato).zfill(2)
+    digitos = ''.join(secrets.choice(string.digits) for _ in range(5))
+    return f"V{letras}{ano}{num_candidato}{digitos}"
 
 
-# INICIAR VOTAÇÃO
-
-def iniciar_votacao():
-    global votacao_aberta
-
-    print("\n--- INICIAR VOTAÇÃO ---")
-
+def autenticar_mesario():
     titulo = input("Título do mesário: ").strip()
     cpf_parcial = solicitar_cpf_parcial()
     chave_digitada = input("Chave de acesso: ").strip().upper()
@@ -38,44 +36,65 @@ def iniciar_votacao():
     if not eleitor:
         registrar("ALERTA: Tentativa de acesso negado")
         print("Mesário não encontrado.")
-        return
+        return None
 
     if eleitor["cpf"][:4] != cpf_parcial:
         registrar("ALERTA: Tentativa de acesso negado")
         print("CPF incorreto.")
-        return
-    
-    if eleitor["chave_acesso"] != chave_digitada:
-       registrar("ALERTA: Tentativa de acesso negado")
-       print("Chave incorreta.")
-       return
+        return None
 
+    if eleitor["chave_acesso"] != chave_digitada:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("Chave de acesso incorreta.")
+        return None
 
     if not eleitor["mesario"]:
         registrar("ALERTA: Tentativa de acesso negado")
-        print("Apenas mesários podem iniciar a votação.")
+        print("Apenas mesários podem realizar esta operação.")
+        return None
+
+    return eleitor
+
+
+def iniciar_votacao():
+    global votacao_aberta
+
+    print("\n--- INICIAR VOTAÇÃO ---")
+
+    mesario = autenticar_mesario()
+    if not mesario:
         return
 
     confirm = input("Deseja iniciar uma nova votação? (s/n): ").lower()
 
-    if confirm == 's':
-        try:
-            resetar_votacao()
-            salvar()
-            votacao_aberta = True
-
-            registrar("ABERTURA: Votação iniciada com sucesso. Total de votos zerado.")
-
-            print("Votação iniciada com sucesso!")
-
-        except Exception as erro:
-            desfazer()
-            print("Erro ao iniciar votação:", erro)
-
-    else:
+    if confirm != 's':
         print("Operação cancelada.")
+        return
 
-# ENCERRAR VOTAÇÃO
+    try:
+        resetar_votacao()
+        salvar()
+        votacao_aberta = True
+
+        registrar("ABERTURA: Votação iniciada com sucesso. Total de votos zerado.")
+
+        # Zerézima: exibe candidatos com zero votos (RF002.01.05)
+        print("\n===== ZERÉZIMA =====")
+        print("Candidatos registrados — total de votos: ZERO")
+        print("=" * 40)
+        candidatos = listar_candidatos()
+        if not candidatos:
+            print("Nenhum candidato cadastrado.")
+        else:
+            for c in candidatos:
+                print(f"[{c['numero']}] {c['nome']} — {c['partido']} — Votos: 0")
+        print("=" * 40)
+        print("Votação iniciada com sucesso!")
+
+    except Exception as erro:
+        desfazer()
+        print("Erro ao iniciar votação:", erro)
+
 
 def encerrar_votacao():
     global votacao_aberta
@@ -86,45 +105,28 @@ def encerrar_votacao():
         print("A votação já está encerrada.")
         return
 
-    titulo = input("Título do mesário: ").strip()
-    cpf_parcial = solicitar_cpf_parcial()
-    chave_digitada = input("Chave de acesso: ").strip().upper()
-
-    eleitor = buscar_por_titulo(titulo)
-
-    if not eleitor:
-        registrar("ALERTA: Tentativa de acesso negado")
-        print("Mesário não encontrado.")
+    mesario = autenticar_mesario()
+    if not mesario:
         return
 
-    if eleitor["cpf"][:4] != cpf_parcial:
-        registrar("ALERTA: Tentativa de acesso negado")
-        print("CPF incorreto.")
-        return
-    
-    if eleitor["chave_acesso"] != chave_digitada:
-        registrar("ALERTA: Tentativa de acesso negado")
-        print("Chave incorreta.")
-        return
+    confirm = input("Deseja realmente encerrar a votação? (Sim/Não): ").strip().lower()
 
-    if not eleitor["mesario"]:
-        registrar("ALERTA: Tentativa de acesso negado")
-        print("Apenas mesários podem encerrar a votação.")
-        return
-
-    confirm = input("Deseja realmente encerrar a votação? (s/n): ").lower()
-
-    if confirm != "s":
+    if confirm != "sim":
         print("Operação cancelada.")
         return
 
+    # Dupla confirmação da chave (RF002.01.07.05)
+    chave_confirmacao = input("Digite sua chave de acesso novamente para confirmar: ").strip().upper()
+
+    if chave_confirmacao != mesario["chave_acesso"]:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("Chave incorreta. Encerramento cancelado.")
+        return
+
     votacao_aberta = False
-
     registrar("ENCERRAMENTO: Votação finalizada com sucesso.")
-
     print("Votação encerrada com sucesso!")
 
-# REGISTRAR VOTO
 
 def registrar_voto():
     print("\n--- REGISTRO DE VOTO ---")
@@ -141,7 +143,7 @@ def registrar_voto():
         return
 
     try:
-        eleitor = buscar_eleitor_login(titulo, chave_digitada)
+        eleitor = buscar_por_titulo(titulo)
 
         if not eleitor:
             registrar("ALERTA: Tentativa de acesso negado")
@@ -152,17 +154,16 @@ def registrar_voto():
             registrar("ALERTA: Tentativa de acesso negado")
             print("CPF incorreto.")
             return
-        
+
         if eleitor["chave_acesso"] != chave_digitada:
-          registrar("ALERTA: Tentativa de acesso negado")
-          print("Chave incorreta.")
-          return
+            registrar("ALERTA: Tentativa de acesso negado")
+            print("Chave de acesso incorreta.")
+            return
 
         if eleitor["status_voto"] == "JA_VOTOU":
             registrar("ALERTA: Tentativa de voto duplo")
             print("Esse eleitor já votou.")
             return
-
 
         numero = input("Digite o número do candidato: ").strip()
 
@@ -172,22 +173,27 @@ def registrar_voto():
 
         candidato = buscar_candidato(int(numero))
 
-        if not candidato:
-            print("Candidato não existe.")
-            return
-
-        confirm = input(f"Confirmar voto em {candidato['nome']}? (s/n): ").lower()
+        if candidato:
+            print(f"\nCandidato: {candidato['nome']}")
+            print(f"Número: {numero}")
+            print(f"Partido: {candidato['partido']}")
+            confirm = input("Confirmar voto? (s/n): ").lower()
+        else:
+            print("\nCandidato não encontrado. O voto será registrado como NULO.")
+            confirm = input("Confirmar voto nulo? (s/n): ").lower()
 
         if confirm != "s":
             print("Voto cancelado.")
             return
 
         agora = datetime.now()
-        protocolo = gerar_protocolo()
+        id_candidato = candidato["id"] if candidato else None
+        numero_protocolo = int(numero) if candidato else 0
+        protocolo = gerar_protocolo(numero_protocolo)
 
-        inserir_voto(candidato["id"], agora, protocolo)
+        inserir_voto(id_candidato, agora, protocolo)
         atualizar_status_eleitor(eleitor["id"])
-        inserir_log(agora, f"SUCESSO: voto registrado para {eleitor['nome_completo']}")
+        inserir_log(agora, "SUCESSO: Voto realizado com sucesso")
         registrar("SUCESSO: Voto realizado com sucesso")
         salvar()
 
