@@ -159,13 +159,6 @@ def remover_por_titulo(titulo):
 def buscar_eleitor_login(titulo, chave):
 
     cursor.execute("""
-<<<<<<< HEAD
-        SELECT id, nome_completo, status_voto, cpf, chave_acesso
-        FROM eleitor 
-        WHERE titulo_eleitor = %s AND chave_acesso = %s
-    """, (titulo, chave))
-    return cursor.fetchone()
-=======
         SELECT id, nome_completo, cpf, status_voto
         FROM eleitor
         WHERE titulo_eleitor = %s
@@ -182,7 +175,6 @@ def buscar_eleitor_login(titulo, chave):
         eleitor["cpf"] = descriptografar_hill(eleitor["cpf"])
 
     return eleitor
->>>>>>> a28ea263b20a4072b6c4a9ecce0f7300a810b856
 
 
 def listar_candidatos():
@@ -401,7 +393,7 @@ def contar_votos():
 
 def salvar():
 
-    conn.commit() # Salva as alterações feitas no banco de dados
+    conn.commit() # Salva as alterações no banco de dados
 
 
 def desfazer():
