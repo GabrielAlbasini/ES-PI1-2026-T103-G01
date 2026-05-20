@@ -161,13 +161,3 @@ def descriptografar_hill(texto):
     return texto_final
 
 
-cpf = "12345678901"
-
-cpf_criptografado = criptografar_hill(cpf)
-
-print("CPF Original:", cpf)
-print("CPF Criptografado:", cpf_criptografado)
-
-cpf_descriptografado = descriptografar_hill(cpf_criptografado)
-
-print("CPF Descriptografado:", cpf_descriptografado)

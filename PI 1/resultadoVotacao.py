@@ -1,28 +1,19 @@
-from db import cursor
+from db import (
+    buscar_resultados_boletim,
+    contar_eleitores,
+    contar_eleitores_votaram,
+    buscar_votos_por_partido,
+    contar_votos
+)
 
 
-# =========================================
-# BOLETIM DE URNA
-# =========================================
 def boletim_urna():
 
     print("\n===== BOLETIM DE URNA =====")
 
     try:
-        cursor.execute("""
-            SELECT
-                c.nome,
-                c.numero,
-                c.partido,
-                COUNT(v.id) AS total_votos
-            FROM candidato c
-            LEFT JOIN voto v
-                ON c.id = v.id_candidato
-            GROUP BY c.id
-            ORDER BY c.nome ASC
-        """)
 
-        resultados = cursor.fetchall()
+        resultados = buscar_resultados_boletim()
 
         if not resultados:
             print("Nenhum candidato cadastrado.")
@@ -34,6 +25,7 @@ def boletim_urna():
         print("\n=========== RESULTADO ===========")
 
         for candidato in resultados:
+
             nome = candidato["nome"]
             numero = candidato["numero"]
             partido = candidato["partido"]
@@ -50,7 +42,9 @@ def boletim_urna():
                 vencedor = candidato
 
         if vencedor:
+
             print("\n===== VENCEDOR DA ELEIÇÃO =====")
+
             print(f"Nome: {vencedor['nome']}")
             print(f"Número: {vencedor['numero']}")
             print(f"Partido: {vencedor['partido']}")
@@ -59,31 +53,19 @@ def boletim_urna():
     except Exception as erro:
         print("Erro ao gerar boletim de urna:", erro)
 
-# =========================================
-# ESTATÍSTICAS DE COMPARECIMENTO
-# =========================================
+
 def estatisticas_comparecimento():
- 
+
     print("\n===== ESTATÍSTICAS DE COMPARECIMENTO =====")
 
     try:
-        # Total de eleitores cadastrados
-        cursor.execute("SELECT COUNT(*) AS total FROM eleitor")
-        total_eleitores = cursor.fetchone()["total"]
 
-        # Total de eleitores que votaram
-        cursor.execute("""
-            SELECT COUNT(*) AS total
-            FROM eleitor
-            WHERE status_voto = 'JA_VOTOU'
-        """)
+        total_eleitores = contar_eleitores()
 
-        total_votaram = cursor.fetchone()["total"]
+        total_votaram = contar_eleitores_votaram()
 
-        # Total de abstenções
         abstencoes = total_eleitores - total_votaram
 
-        # Percentual
         percentual = 0
 
         if total_eleitores > 0:
@@ -97,32 +79,21 @@ def estatisticas_comparecimento():
     except Exception as erro:
         print("Erro ao gerar estatísticas:", erro)
 
-# =========================================
-# VOTOS POR PARTIDO
-# =========================================
+
 def votos_por_partido():
 
     print("\n===== VOTOS POR PARTIDO =====")
 
     try:
-        cursor.execute("""
-            SELECT
-                c.partido,
-                COUNT(v.id) AS total_votos
-            FROM candidato c
-            LEFT JOIN voto v
-                ON c.id = v.id_candidato
-            GROUP BY c.partido
-            ORDER BY total_votos DESC
-        """)
 
-        partidos = cursor.fetchall()
+        partidos = buscar_votos_por_partido()
 
         if not partidos:
             print("Nenhum partido encontrado.")
             return
 
         for partido in partidos:
+
             print(f"Partido: {partido['partido']}")
             print(f"Total de votos: {partido['total_votos']}")
             print("-" * 35)
@@ -131,42 +102,32 @@ def votos_por_partido():
         print("Erro ao gerar votos por partido:", erro)
 
 
-# =========================================
-# VALIDAÇÃO DE INTEGRIDADE
-# =========================================
 def validacao_integridade():
-   
 
     print("\n===== VALIDAÇÃO DE INTEGRIDADE =====")
 
     try:
-        # Total de votos registrados
-        cursor.execute("SELECT COUNT(*) AS total FROM voto")
-        total_votos = cursor.fetchone()["total"]
 
-        # Total de eleitores que votaram
-        cursor.execute("""
-            SELECT COUNT(*) AS total
-            FROM eleitor
-            WHERE status_voto = 'JA_VOTOU'
-        """)
+        total_votos = contar_votos()
 
-        total_eleitores_votaram = cursor.fetchone()["total"]
+        total_eleitores_votaram = contar_eleitores_votaram()
 
         print(f"Total de votos registrados: {total_votos}")
+
         print(f"Total de eleitores com status JA_VOTOU: {total_eleitores_votaram}")
 
         print("\n===== RESULTADO DA VALIDAÇÃO =====")
 
         if total_votos == total_eleitores_votaram:
+
             print("INTEGRIDADE CONFIRMADA")
             print("Nenhuma inconsistência encontrada.")
+
         else:
+
             print("FALHA DE INTEGRIDADE DETECTADA")
+
             print("A quantidade de votos não corresponde aos eleitores que votaram.")
 
     except Exception as erro:
         print("Erro na validação de integridade:", erro)
-
-
-
