@@ -75,7 +75,7 @@ def remover_por_titulo(titulo):
 
 def buscar_eleitor_login(titulo, chave):
     cursor.execute("""
-        SELECT id, nome_completo, status_voto 
+        SELECT id, nome_completo, status_voto, cpf, chave_acesso
         FROM eleitor 
         WHERE titulo_eleitor = %s AND chave_acesso = %s
     """, (titulo, chave))

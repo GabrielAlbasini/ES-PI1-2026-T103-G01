@@ -10,6 +10,7 @@ from db import (
     desfazer
 )
 from validações import solicitar_cpf_parcial
+from eleitor import gerar_chave_acesso
 from auditoria import registrar
 from datetime import datetime
 import secrets
@@ -30,6 +31,7 @@ def iniciar_votacao():
 
     titulo = input("Título do mesário: ").strip()
     cpf_parcial = solicitar_cpf_parcial()
+    chave_digitada = input("Chave de acesso: ").strip().upper()
 
     eleitor = buscar_por_titulo(titulo)
 
@@ -42,6 +44,12 @@ def iniciar_votacao():
         registrar("ALERTA: Tentativa de acesso negado")
         print("CPF incorreto.")
         return
+    
+    if eleitor["chave_acesso"] != chave_digitada:
+       registrar("ALERTA: Tentativa de acesso negado")
+       print("Chave incorreta.")
+       return
+
 
     if not eleitor["mesario"]:
         registrar("ALERTA: Tentativa de acesso negado")
@@ -80,6 +88,7 @@ def encerrar_votacao():
 
     titulo = input("Título do mesário: ").strip()
     cpf_parcial = solicitar_cpf_parcial()
+    chave_digitada = input("Chave de acesso: ").strip().upper()
 
     eleitor = buscar_por_titulo(titulo)
 
@@ -91,6 +100,11 @@ def encerrar_votacao():
     if eleitor["cpf"][:4] != cpf_parcial:
         registrar("ALERTA: Tentativa de acesso negado")
         print("CPF incorreto.")
+        return
+    
+    if eleitor["chave_acesso"] != chave_digitada:
+        registrar("ALERTA: Tentativa de acesso negado")
+        print("Chave incorreta.")
         return
 
     if not eleitor["mesario"]:
@@ -121,12 +135,13 @@ def registrar_voto():
 
     titulo = input("Título de eleitor: ").strip()
     cpf_parcial = solicitar_cpf_parcial()
+    chave_digitada = input("Chave de acesso: ").strip().upper()
 
     if not titulo or not cpf_parcial:
         return
 
     try:
-        eleitor = buscar_eleitor_login(titulo)
+        eleitor = buscar_eleitor_login(titulo, chave_digitada)
 
         if not eleitor:
             registrar("ALERTA: Tentativa de acesso negado")
@@ -137,6 +152,11 @@ def registrar_voto():
             registrar("ALERTA: Tentativa de acesso negado")
             print("CPF incorreto.")
             return
+        
+        if eleitor["chave_acesso"] != chave_digitada:
+          registrar("ALERTA: Tentativa de acesso negado")
+          print("Chave incorreta.")
+          return
 
         if eleitor["status_voto"] == "JA_VOTOU":
             registrar("ALERTA: Tentativa de voto duplo")
