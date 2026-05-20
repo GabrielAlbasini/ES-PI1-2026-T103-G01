@@ -1,168 +1,244 @@
-from auditoria import registrar
-from validações import validar_cpf, validar_titulo_eleitor, solicitar_cpf, solicitar_titulo
-from db import (
-    inserir_eleitor,
-    buscar_por_titulo,
-    buscar_por_cpf_ou_titulo,
-    listar_todos,
-    atualizar_eleitor,
-    remover_por_titulo
-)
+CHAVE = [[3, 3],
+         [2, 5]]
 
-import secrets
-import string
+MOD = 26
 
 
-# GERAR CHAVE DE ACESSO (CORRIGIDA: Gerando apenas letras para não quebrar na Cifra de Hill)
-def gerar_chave_acesso(nome):
-    partes = nome.strip().split()
+def texto_para_numeros(texto):
 
-    if len(partes) < 2:
-        raise ValueError("Digite nome e sobrenome.")
+    texto = texto.upper()
+    texto = texto.replace(" ", "")
 
-    primeira_parte = partes[0][:2].upper()   # 2 letras do nome
-    letra_sobrenome = partes[1][0].upper()   # 1 letra do sobrenome
-    
-    # Geramos 4 letras maiúsculas aleatórias para evitar misturar números e corromper a descriptografia
-    letras_aleatorias = ''.join(secrets.choice(string.ascii_uppercase) for _ in range(4))  
+    numeros = []
 
-    return primeira_parte + letra_sobrenome + letras_aleatorias
+    for caractere in texto:
 
+        if caractere.isalpha():
 
-# CADASTRAR
-def cadastrar_eleitor():
-    print("\n--- CADASTRO DE ELEITOR ---")
-    
-    nome = input("Digite o nome: ").strip()
-    
-    # Validação preventiva para garantir que tenha nome e sobrenome antes de chamar a função
-    if not nome or len(nome.split()) < 2:
-        print("Erro: Digite o nome completo (Nome e pelo menos um Sobrenome)!")
-        return
-        
-    cpf = solicitar_cpf()
-    titulo = solicitar_titulo()
-    mesario = input("É mesário? (s/n): ").strip().lower()
+            numeros.append(
+                ord(caractere) - ord('A')
+            )
 
-    # Agora a chave será gerada de forma segura para o banco de dados
-    chave = gerar_chave_acesso(nome)
-
-    if mesario not in ["s", "n"]:
-        print("Erro: Digite apenas 's' ou 'n'")
-        return
-
-    if buscar_por_cpf_ou_titulo(cpf, titulo):
-        print("Erro: Eleitor já cadastrado!")
-        return
-
-    mesario_bool = mesario == "s"
-
-    sucesso = inserir_eleitor(nome, cpf, titulo, mesario_bool, chave)
-
-    if sucesso:
-        print("Eleitor cadastrado com sucesso!")
-        print(f"Sua chave de acesso é: {chave}")
-        print("Guarde essa chave com segurança!")
-    else:
-        print("Erro ao cadastrar.")
+    return numeros
 
 
-# BUSCAR
-def buscar_eleitor():
-    print("\n--- BUSCAR ELEITOR ---")
+def numeros_para_texto(numeros):
 
-    titulo = input("Digite o título do eleitor: ").strip()
+    resultado = ""
 
-    eleitor = buscar_por_titulo(titulo)
+    for numero in numeros:
 
-    if eleitor:
-        print("\nEleitor encontrado:")
-        print(f"Nome: {eleitor['nome_completo']}")
-        print(f"Título: {eleitor['titulo_eleitor']}")
-        print(f"CPF: {eleitor['cpf']}")
-        print(f"Status: {eleitor['status_voto']}")
-    else:
-        print("Eleitor não encontrado.")
+        resultado += chr(numero + ord('A'))
+
+    return resultado
 
 
-# LISTAR
-def listar_eleitores():
-    print("\n--- LISTA DE ELEITORES ---")
+def ajustar_texto(texto):
 
-    eleitores = listar_todos()
+    texto = texto.upper()
+    texto = texto.replace(" ", "")
 
-    if eleitores:
-        for e in eleitores:
-            print("\n----------")
-            print(f"Nome: {e['nome_completo']}")
-            print(f"Título: {e['titulo_eleitor']}")
-            print(f"CPF: {e['cpf']}")
-            print(f"Mesário: {'Sim' if e['mesario'] else 'Não'}")
-            print(f"Status: {e['status_voto']}")
-    else:
-        print("Nenhum eleitor cadastrado.")
+    if len(texto) % 2 != 0:
+        texto += "X"
+
+    return texto
 
 
-# EDITAR
-def editar_eleitor():
-    print("\n- EDITAR ELEITOR -")
+def numero_para_letra(texto):
 
-    titulo = input("Digite o título: ").strip()
+    mapa = {
+        "0": "ZA",
+        "1": "ZB",
+        "2": "ZC",
+        "3": "ZD",
+        "4": "ZE",
+        "5": "ZF",
+        "6": "ZG",
+        "7": "ZH",
+        "8": "ZI",
+        "9": "ZJ"
+    }
 
-    eleitor = buscar_por_titulo(titulo)
+    resultado = ""
 
-    if not eleitor:
-        print("Eleitor não encontrado.")
-        return
+    for caractere in texto:
 
-    print("\nDeixe em branco para manter o valor atual.\n")
+        if caractere.isdigit():
 
-    novo_nome = input(f"Nome ({eleitor['nome_completo']}): ").strip()
-    novo_cpf = input(f"CPF ({eleitor['cpf']}): ").strip()
-    mesario_atual = 's' if eleitor['mesario'] else 'n'
-    novo_mesario = input(f"É mesário? (s/n) [{mesario_atual}]: ").strip().lower()
+            resultado += mapa[caractere]
 
-    if novo_mesario and novo_mesario not in ["s", "n"]:
-        print("Erro: use apenas 's' ou 'n'")
-        return
+        elif caractere.isalpha():
 
-    if novo_cpf and not validar_cpf(novo_cpf):
-        print("Erro: CPF inválido!")
-        return
+            resultado += caractere.upper()
 
-    nome_final = novo_nome if novo_nome else eleitor['nome_completo']
-    cpf_final = novo_cpf if novo_cpf else eleitor['cpf']
-    mesario_final = (novo_mesario == "s") if novo_mesario else eleitor['mesario']
-
-    sucesso = atualizar_eleitor(nome_final, cpf_final, mesario_final, titulo)
-
-    if Clinical_sucesso:= sucesso:
-        print("Eleitor updated com sucesso!")
-    else:
-        print("Erro ao atualizar.")
+    return resultado
 
 
-# REMOVER
-def remover_eleitor():
-    print("\n--- REMOVER ELEITOR ---")
+def letra_para_numero(texto):
 
-    titulo = input("Digite o título: ").strip()
+    mapa = {
+        "ZA": "0",
+        "ZB": "1",
+        "ZC": "2",
+        "ZD": "3",
+        "ZE": "4",
+        "ZF": "5",
+        "ZG": "6",
+        "ZH": "7",
+        "ZI": "8",
+        "ZJ": "9"
+    }
 
-    eleitor = buscar_por_titulo(titulo)
+    resultado = ""
 
-    if not eleitor:
-        print("Eleitor não encontrado.")
-        return
+    i = 0
 
-    confirm = input(f"Tem certeza que deseja remover {eleitor['nome_completo']}? (s/n): ").lower()
+    while i < len(texto):
 
-    if confirm != "s":
-        print("Operação cancelada.")
-        return
+        bloco = texto[i:i + 2]
 
-    sucesso = remover_por_titulo(titulo)
+        if bloco in mapa:
 
-    if sucesso:
-        print("Eleitor removido com sucesso!")
-    else:
-        print("Erro ao remover.")
+            resultado += mapa[bloco]
+            i += 2
+
+        else:
+
+            resultado += texto[i]
+            i += 1
+
+    return resultado
+
+
+def multiplicar_matriz(matriz, bloco):
+
+    resultado = []
+
+    for i in range(2):
+
+        valor = (
+            matriz[i][0] * bloco[0] +
+            matriz[i][1] * bloco[1]
+        ) % MOD
+
+        resultado.append(valor)
+
+    return resultado
+
+
+def inversa_modular(numero):
+
+    numero = numero % MOD
+
+    for i in range(1, MOD):
+
+        if (numero * i) % MOD == 1:
+            return i
+
+    return None
+
+
+def inversa_modular_matriz(matriz):
+
+    a = matriz[0][0]
+    b = matriz[0][1]
+    c = matriz[1][0]
+    d = matriz[1][1]
+
+    det = (a * d - b * c) % MOD
+
+    det_inv = inversa_modular(det)
+
+    if det_inv is None:
+        raise ValueError("Matriz sem inversa modular.")
+
+    adjunta = [
+        [d, -b],
+        [-c, a]
+    ]
+
+    inversa = []
+
+    for linha in adjunta:
+
+        nova_linha = []
+
+        for valor in linha:
+
+            novo_valor = (
+                det_inv * valor
+            ) % MOD
+
+            nova_linha.append(novo_valor)
+
+        inversa.append(nova_linha)
+
+    return inversa
+
+
+def criptografar_hill(texto):
+
+    if not texto:
+        return ""
+
+    texto = numero_para_letra(texto)
+
+    texto = ajustar_texto(texto)
+
+    numeros = texto_para_numeros(texto)
+
+    resultado = []
+
+    for i in range(0, len(numeros), 2):
+
+        bloco = [
+            numeros[i],
+            numeros[i + 1]
+        ]
+
+        criptografado = multiplicar_matriz(
+            CHAVE,
+            bloco
+        )
+
+        resultado.extend(criptografado)
+
+    return numeros_para_texto(resultado)
+
+
+def descriptografar_hill(texto):
+
+    if not texto:
+        return ""
+
+    numeros = texto_para_numeros(texto)
+
+    if len(numeros) % 2 != 0:
+        return ""
+
+    chave_inversa = inversa_modular_matriz(CHAVE)
+
+    resultado = []
+
+    for i in range(0, len(numeros), 2):
+
+        bloco = [
+            numeros[i],
+            numeros[i + 1]
+        ]
+
+        descriptografado = multiplicar_matriz(
+            chave_inversa,
+            bloco
+        )
+
+        resultado.extend(descriptografado)
+
+    texto_final = numeros_para_texto(resultado)
+
+    texto_final = letra_para_numero(texto_final)
+
+    if texto_final.endswith("X"):
+        texto_final = texto_final[:-1]
+
+    return texto_final
