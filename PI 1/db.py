@@ -11,7 +11,7 @@ try:
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="",
+        password="Lobo2404$",
         database="sistema_votacao"
     )
 

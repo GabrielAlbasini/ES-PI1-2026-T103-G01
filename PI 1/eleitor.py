@@ -37,7 +37,7 @@ def cadastrar_eleitor():
     titulo = solicitar_titulo()
     mesario = input("É mesário? (s/n): ").strip().lower()
 
-    chave = gerar_chave_acesso()
+    chave = gerar_chave_acesso(nome)
 
     if not nome:
         print("Erro: Todos os campos são obrigatórios!")
