@@ -53,7 +53,6 @@ def menu_gerenciamento():
     while opcao != "0":
         print("\n=== GERENCIAMENTO ===")
         print("1 - Eleitor")
-        print("2 - Candidato")
         print("0 - Voltar")
 
         opcao = input("Escolha uma opção: ")
