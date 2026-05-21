@@ -9,7 +9,7 @@ from db import (
 
 def boletim_urna():
 
-    print("\n===== BOLETIM DE URNA =====")
+    print("\n=== BOLETIM DE URNA ===")
 
     try:
 
@@ -22,7 +22,7 @@ def boletim_urna():
         maior_votacao = -1
         vencedor = None
 
-        print("\n=========== RESULTADO ===========")
+        print("\n=== RESULTADO ===")
 
         for candidato in resultados:
 
@@ -43,7 +43,7 @@ def boletim_urna():
 
         if vencedor:
 
-            print("\n===== VENCEDOR DA ELEIÇÃO =====")
+            print("\n=== VENCEDOR DA ELEIÇÃO ===")
 
             print(f"Nome: {vencedor['nome']}")
             print(f"Número: {vencedor['numero']}")
@@ -56,7 +56,7 @@ def boletim_urna():
 
 def estatisticas_comparecimento():
 
-    print("\n===== ESTATÍSTICAS DE COMPARECIMENTO =====")
+    print("\n=== ESTATÍSTICAS DE COMPARECIMENTO ===")
 
     try:
 
@@ -82,7 +82,7 @@ def estatisticas_comparecimento():
 
 def votos_por_partido():
 
-    print("\n===== VOTOS POR PARTIDO =====")
+    print("\n=== VOTOS POR PARTIDO ===")
 
     try:
 
@@ -104,7 +104,7 @@ def votos_por_partido():
 
 def validacao_integridade():
 
-    print("\n===== VALIDAÇÃO DE INTEGRIDADE =====")
+    print("\n=== VALIDAÇÃO DE INTEGRIDADE ===")
 
     try:
 
@@ -116,7 +116,7 @@ def validacao_integridade():
 
         print(f"Total de eleitores com status JA_VOTOU: {total_eleitores_votaram}")
 
-        print("\n===== RESULTADO DA VALIDAÇÃO =====")
+        print("\n=== RESULTADO DA VALIDAÇÃO ===")
 
         if total_votos == total_eleitores_votaram:
 

@@ -30,7 +30,7 @@ def gerar_chave_acesso(nome):
 
 # CADASTRAR
 def cadastrar_eleitor():
-    print("\n--- CADASTRO DE ELEITOR ---")
+    print("\n=== CADASTRO DE ELEITOR ===")
     
     nome = input("Digite o nome: ").strip()
     cpf = solicitar_cpf()
@@ -66,7 +66,7 @@ def cadastrar_eleitor():
 # BUSCAR
 
 def buscar_eleitor():
-    print("\n--- BUSCAR ELEITOR ---")
+    print("\n=== BUSCAR ELEITOR ===")
 
     titulo = input("Digite o título do eleitor: ").strip()
 
@@ -84,7 +84,7 @@ def buscar_eleitor():
 
 # LISTAR
 def listar_eleitores():
-    print("\n--- LISTA DE ELEITORES ---")
+    print("\n=== LISTA DE ELEITORES ===")
 
     eleitores = listar_todos()
 
@@ -103,7 +103,7 @@ def listar_eleitores():
 # EDITAR
 
 def editar_eleitor():
-    print("\n- EDITAR ELEITOR -")
+    print("\n=== EDITAR ELEITOR ===")
 
     titulo = input("Digite o título: ").strip()
 
@@ -143,7 +143,7 @@ def editar_eleitor():
 # REMOVER
 
 def remover_eleitor():
-    print("\n--- REMOVER ELEITOR ---")
+    print("\n=== REMOVER ELEITOR ===")
 
     titulo = input("Digite o título: ").strip()
 

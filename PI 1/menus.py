@@ -25,7 +25,7 @@ from resultadoVotacao import (
 def menu_eleitor():
     opcao = ""
     while opcao != "0":
-        print("\n--- ELEITOR ---")
+        print("\n=== ELEITOR ===")
         print("1 - Cadastrar eleitor")
         print("2 - Buscar eleitor")
         print("3 - Listar eleitores")
@@ -51,7 +51,7 @@ def menu_eleitor():
 def menu_gerenciamento():
     opcao = ""
     while opcao != "0":
-        print("\n===== GERENCIAMENTO =====")
+        print("\n=== GERENCIAMENTO ===")
         print("1 - Eleitor")
         print("2 - Candidato")
         print("0 - Voltar")
@@ -69,7 +69,7 @@ def menu_gerenciamento():
 def menu_auditoria():
     opcao = ""
     while opcao != "0":
-        print("\n--- AUDITORIA ---")
+        print("\n=== AUDITORIA ===")
         print("1 - Ver logs")
         print("2 - Ver protocolos")
         print("0 - Voltar")
@@ -89,7 +89,7 @@ def menu_auditoria():
 def menu_resultados():
     opcao = ""
     while opcao != "0":
-        print("\n--- RESULTADOS ---")
+        print("\n=== RESULTADOS ===")
         print("1 - Boletim de urna")
         print("2 - Estatísticas")
         print("3 - Votos por partido")
@@ -114,7 +114,7 @@ def menu_resultados():
 def sistema_votacao():
     opcao = ""
     while opcao != "0":
-        print("\n--- SISTEMA DE VOTAÇÃO ---")
+        print("\n=== SISTEMA DE VOTAÇÃO ===")
         print("1 - Iniciar votação")
         print("2 - Votar")
         print("3 - Encerrar votação")
@@ -137,7 +137,7 @@ def sistema_votacao():
 def menu_votacao():
     opcao = ""
     while opcao != "0":
-        print("\n--- MENU DE VOTAÇÃO ---")
+        print("\n=== MENU DE VOTAÇÃO ===")
         print("1 - Abrir sistema de votação")
         print("2 - Auditoria")
         print("3 - Resultados")
@@ -160,7 +160,7 @@ def menu_votacao():
 def menu_principal():
     opcao = ""
     while opcao != "0":
-        print("\n===== SISTEMA DE VOTAÇÃO =====")
+        print("\n=== SISTEMA DE VOTAÇÃO ===")
         print("1 - Gerenciamento")
         print("2 - Votação")
         print("0 - Sair")

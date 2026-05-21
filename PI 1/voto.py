@@ -59,7 +59,7 @@ def autenticar_mesario():
 def iniciar_votacao():
     global votacao_aberta
 
-    print("\n--- INICIAR VOTAÇÃO ---")
+    print("\n=== INICIAR VOTAÇÃO ===")
 
     mesario = autenticar_mesario()
     if not mesario:
@@ -79,7 +79,7 @@ def iniciar_votacao():
         registrar("ABERTURA: Votação iniciada com sucesso. Total de votos zerado.")
 
         # Zerézima: exibe candidatos com zero votos (RF002.01.05)
-        print("\n===== ZERÉZIMA =====")
+        print("\n=== ZERÉZIMA ===")
         print("Candidatos registrados — total de votos: ZERO")
         print("=" * 40)
         candidatos = listar_candidatos()
@@ -99,7 +99,7 @@ def iniciar_votacao():
 def encerrar_votacao():
     global votacao_aberta
 
-    print("\n--- ENCERRAR VOTAÇÃO ---")
+    print("\n=== ENCERRAR VOTAÇÃO ===")
 
     if not votacao_aberta:
         print("A votação já está encerrada.")
@@ -129,7 +129,7 @@ def encerrar_votacao():
 
 
 def registrar_voto():
-    print("\n--- REGISTRO DE VOTO ---")
+    print("\n=== REGISTRO DE VOTO ===")
 
     if not votacao_aberta:
         print("A votação está encerrada!")

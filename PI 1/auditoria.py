@@ -16,7 +16,7 @@ def iniciar_auditoria():
 
     arquivo_atual = f"auditoria_{timestamp}.txt"
 
-    with open(arquivo_atual, "w") as arquivo:
+    with open(arquivo_atual, "w", encoding="utf-8") as arquivo:
 
         arquivo.write(
             f"=== INÍCIO DA VOTAÇÃO {timestamp} ===\n"
@@ -37,7 +37,7 @@ def registrar(mensagem):
         "%Y-%m-%d %H:%M:%S"
     )
 
-    with open(arquivo_atual, "a") as arquivo:
+    with open(arquivo_atual, "a", encoding="utf-8") as arquivo:
 
         arquivo.write(
             f"[{data_hora}] {mensagem}\n"
@@ -51,7 +51,7 @@ def registrar(mensagem):
 
 def exibir_logs():
 
-    print("\n--- LOGS DO SISTEMA ---")
+    print("\n=== LOGS DO SISTEMA ===")
 
     logs = listar_logs()
 
@@ -75,7 +75,7 @@ def exibir_logs():
 
 def exibir_protocolos():
 
-    print("\n--- PROTOCOLOS DE VOTAÇÃO ---")
+    print("\n=== PROTOCOLOS DE VOTAÇÃO ===")
 
     protocolos = listar_protocolos()
 
