@@ -78,18 +78,11 @@ def iniciar_votacao():
 
         registrar("ABERTURA: Votação iniciada com sucesso. Total de votos zerado.")
 
-        # Zerézima: exibe candidatos com zero votos (RF002.01.05)
-        print("\n=== ZERÉZIMA ===")
-        print("Candidatos registrados — total de votos: ZERO")
-        print("=" * 40)
         candidatos = listar_candidatos()
         if not candidatos:
             print("Nenhum candidato cadastrado.")
         else:
-            for c in candidatos:
-                print(f"[{c['numero']}] {c['nome']} — {c['partido']} — Votos: 0")
-        print("=" * 40)
-        print("Votação iniciada com sucesso!")
+            print("Votação iniciada com sucesso!")
 
     except Exception as erro:
         desfazer()
