@@ -158,26 +158,30 @@ def registrar_voto():
             print("Esse eleitor já votou.")
             return
 
-        numero = input("Digite o número do candidato: ").strip()
+        # LOOP: só sai quando confirmar o voto
+        while True:
+            numero = input("Digite o número do candidato: ").strip()
 
-        if not numero.isdigit():
-            print("Número inválido.")
-            return
+            if not numero.isdigit():
+                print("Número inválido. Tente novamente.")
+                continue
 
-        candidato = buscar_candidato(int(numero))
+            candidato = buscar_candidato(int(numero))
 
-        if candidato:
-            print(f"\nCandidato: {candidato['nome']}")
-            print(f"Número: {numero}")
-            print(f"Partido: {candidato['partido']}")
-            confirm = input("Confirmar voto? (s/n): ").lower()
-        else:
-            print("\nCandidato não encontrado. O voto será registrado como NULO.")
-            confirm = input("Confirmar voto nulo? (s/n): ").lower()
+            if candidato:
+                print(f"\nCandidato: {candidato['nome']}")
+                print(f"Número: {numero}")
+                print(f"Partido: {candidato['partido']}")
+                confirm = input("Confirmar voto? (s/n): ").lower()
+            else:
+                print("\nCandidato não encontrado. O voto será registrado como NULO.")
+                confirm = input("Confirmar voto nulo? (s/n): ").lower()
 
-        if confirm != "s":
-            print("Voto cancelado.")
-            return
+            if confirm == "s":
+                break
+            else:
+                print("Voto não confirmado. Digite o número novamente.\n")
+                continue
 
         agora = datetime.now()
         id_candidato = candidato["id"] if candidato else None
