@@ -10,6 +10,7 @@ from voto import (
     registrar_voto,
     encerrar_votacao
 ) 
+import voto
 from auditoria import (
     exibir_logs,
     exibir_protocolos
@@ -114,19 +115,32 @@ def sistema_votacao():
     opcao = ""
     while opcao != "0":
         print("\n=== SISTEMA DE VOTAÇÃO ===")
-        print("1 - Iniciar votação")
-        print("2 - Votar")
-        print("3 - Encerrar votação")
-        print("0 - Voltar")
+
+        if not voto.votacao_aberta:
+            print("1 - Iniciar votação")
+            print("0 - Voltar")
+        else:
+            print("2 - Votar")
+            print("3 - Encerrar votação")
+            print("0 - Voltar")
 
         opcao = input("Escolha: ")
 
         if opcao == "1":
-            iniciar_votacao()
+            if not voto.votacao_aberta:
+                iniciar_votacao()
+            else:
+                print("A votação já está em andamento.")
         elif opcao == "2":
-            registrar_voto()
+            if voto.votacao_aberta:
+                registrar_voto()
+            else:
+                print("Opção inválida!")
         elif opcao == "3":
-            encerrar_votacao()
+            if voto.votacao_aberta:
+                encerrar_votacao()
+            else:
+                print("Opção inválida!")
         elif opcao == "0":
             print("Voltando...")
         else:

@@ -108,7 +108,7 @@ def encerrar_votacao():
         print("Operação cancelada.")
         return
 
-    # Dupla confirmação da chave (RF002.01.07.05)
+
     chave_confirmacao = input("Digite sua chave de acesso novamente para confirmar: ").strip().upper()
 
     if chave_confirmacao != mesario["chave_acesso"]:
