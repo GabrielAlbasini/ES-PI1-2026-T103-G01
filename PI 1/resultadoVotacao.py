@@ -13,7 +13,7 @@ def boletim_urna():
 
     try:
 
-        resultados = buscar_resultados_boletim()
+        resultados, total_nulos = buscar_resultados_boletim()  # ← recebe os dois valores
 
         if not resultados:
             print("Nenhum candidato cadastrado.")
@@ -40,6 +40,10 @@ def boletim_urna():
             if votos > maior_votacao:
                 maior_votacao = votos
                 vencedor = candidato
+
+        # Exibe votos nulos
+        print(f"Votos NULOS: {total_nulos}")
+        print("-" * 40)
 
         if vencedor:
 

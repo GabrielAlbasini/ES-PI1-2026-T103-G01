@@ -325,9 +325,17 @@ def buscar_resultados_boletim():
         GROUP BY c.id
         ORDER BY c.nome ASC
     """)
+    resultados = cursor.fetchall()
 
-    return cursor.fetchall()
+    cursor.execute("""
+        SELECT COUNT(*) AS total_nulos
+        FROM voto
+        WHERE id_candidato IS NULL
+    """)
+    row = cursor.fetchone()
+    total_nulos = row["total_nulos"] if row else 0
 
+    return resultados, total_nulos
 
 def contar_eleitores():
 
