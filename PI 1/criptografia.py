@@ -4,6 +4,8 @@ CHAVE = [[3, 3],
 MOD = 26
 
 
+# TEXTO PARA NÚMEROS
+
 def texto_para_numeros(texto):
 
     texto = texto.upper()
@@ -22,27 +24,37 @@ def texto_para_numeros(texto):
     return numeros
 
 
+# NÚMEROS PARA TEXTO
+
 def numeros_para_texto(numeros):
 
     resultado = ""
 
     for numero in numeros:
 
-        resultado += chr(numero + ord('A'))
+        resultado += chr(
+            numero + ord('A')
+        )
 
     return resultado
 
+
+# AJUSTAR TEXTO
 
 def ajustar_texto(texto):
 
     texto = texto.upper()
     texto = texto.replace(" ", "")
 
+    # Completa bloco ímpar
     if len(texto) % 2 != 0:
+
         texto += "X"
 
     return texto
 
+
+# CONVERTER NÚMEROS EM LETRAS
 
 def numero_para_letra(texto):
 
@@ -65,14 +77,20 @@ def numero_para_letra(texto):
 
         if caractere.isdigit():
 
-            resultado += mapa[caractere]
+            resultado += mapa[
+                caractere
+            ]
 
         elif caractere.isalpha():
 
-            resultado += caractere.upper()
+            resultado += (
+                caractere.upper()
+            )
 
     return resultado
 
+
+# CONVERTER LETRAS EM NÚMEROS
 
 def letra_para_numero(texto):
 
@@ -99,32 +117,48 @@ def letra_para_numero(texto):
 
         if bloco in mapa:
 
-            resultado += mapa[bloco]
+            resultado += mapa[
+                bloco
+            ]
+
             i += 2
 
         else:
 
             resultado += texto[i]
+
             i += 1
 
     return resultado
 
 
-def multiplicar_matriz(matriz, bloco):
+# MULTIPLICAÇÃO DE MATRIZ
+
+def multiplicar_matriz(
+    matriz,
+    bloco
+):
 
     resultado = []
 
     for i in range(2):
 
         valor = (
-            matriz[i][0] * bloco[0] +
-            matriz[i][1] * bloco[1]
+            matriz[i][0] *
+            bloco[0] +
+
+            matriz[i][1] *
+            bloco[1]
         ) % MOD
 
-        resultado.append(valor)
+        resultado.append(
+            valor
+        )
 
     return resultado
 
+
+# INVERSA MODULAR
 
 def inversa_modular(numero):
 
@@ -132,25 +166,41 @@ def inversa_modular(numero):
 
     for i in range(1, MOD):
 
-        if (numero * i) % MOD == 1:
+        if (
+            numero * i
+        ) % MOD == 1:
+
             return i
 
     return None
 
 
-def inversa_modular_matriz(matriz):
+# INVERSA DA MATRIZ
+
+def inversa_modular_matriz(
+    matriz
+):
 
     a = matriz[0][0]
     b = matriz[0][1]
     c = matriz[1][0]
     d = matriz[1][1]
 
-    det = (a * d - b * c) % MOD
+    det = (
+        a * d -
+        b * c
+    ) % MOD
 
-    det_inv = inversa_modular(det)
+    det_inv = (
+        inversa_modular(det)
+    )
 
     if det_inv is None:
-        raise ValueError("Matriz sem inversa modular.")
+
+        raise ValueError(
+            "Matriz sem "
+            "inversa modular."
+        )
 
     adjunta = [
         [d, -b],
@@ -169,76 +219,129 @@ def inversa_modular_matriz(matriz):
                 det_inv * valor
             ) % MOD
 
-            nova_linha.append(novo_valor)
+            nova_linha.append(
+                novo_valor
+            )
 
-        inversa.append(nova_linha)
+        inversa.append(
+            nova_linha
+        )
 
     return inversa
 
+
+# CRIPTOGRAFAR TEXTO
 
 def criptografar_hill(texto):
 
     if not texto:
         return ""
 
-    texto = numero_para_letra(texto)
+    texto = numero_para_letra(
+        texto
+    )
 
-    texto = ajustar_texto(texto)
+    texto = ajustar_texto(
+        texto
+    )
 
-    numeros = texto_para_numeros(texto)
+    numeros = texto_para_numeros(
+        texto
+    )
 
     resultado = []
 
-    for i in range(0, len(numeros), 2):
+    for i in range(
+        0,
+        len(numeros),
+        2
+    ):
 
         bloco = [
             numeros[i],
             numeros[i + 1]
         ]
 
-        criptografado = multiplicar_matriz(
-            CHAVE,
-            bloco
+        criptografado = (
+            multiplicar_matriz(
+                CHAVE,
+                bloco
+            )
         )
 
-        resultado.extend(criptografado)
+        resultado.extend(
+            criptografado
+        )
 
-    return numeros_para_texto(resultado)
+    return numeros_para_texto(
+        resultado
+    )
 
+
+# DESCRIPTOGRAFAR TEXTO
 
 def descriptografar_hill(texto):
 
     if not texto:
         return ""
 
-    numeros = texto_para_numeros(texto)
+    numeros = (
+        texto_para_numeros(
+            texto
+        )
+    )
 
     if len(numeros) % 2 != 0:
+
         return ""
 
-    chave_inversa = inversa_modular_matriz(CHAVE)
+    chave_inversa = (
+        inversa_modular_matriz(
+            CHAVE
+        )
+    )
 
     resultado = []
 
-    for i in range(0, len(numeros), 2):
+    for i in range(
+        0,
+        len(numeros),
+        2
+    ):
 
         bloco = [
             numeros[i],
             numeros[i + 1]
         ]
 
-        descriptografado = multiplicar_matriz(
-            chave_inversa,
-            bloco
+        descriptografado = (
+            multiplicar_matriz(
+                chave_inversa,
+                bloco
+            )
         )
 
-        resultado.extend(descriptografado)
+        resultado.extend(
+            descriptografado
+        )
 
-    texto_final = numeros_para_texto(resultado)
+    texto_final = (
+        numeros_para_texto(
+            resultado
+        )
+    )
 
-    texto_final = letra_para_numero(texto_final)
+    texto_final = (
+        letra_para_numero(
+            texto_final
+        )
+    )
 
+    # Remove caractere extra
     if texto_final.endswith("X"):
-        texto_final = texto_final[:-1]
+
+        texto_final = (
+            texto_final[:-1]
+        )
 
     return texto_final

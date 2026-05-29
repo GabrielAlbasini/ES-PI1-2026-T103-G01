@@ -1,6 +1,14 @@
 from menus import menu_principal
 from auditoria import registrar
 
+
+# INICIAR SISTEMA
+
 if __name__ == "__main__":
-    registrar("Sistema iniciado")
+
+    # Registra abertura do sistema
+    registrar(
+        "Sistema iniciado"
+    )
+
     menu_principal()
