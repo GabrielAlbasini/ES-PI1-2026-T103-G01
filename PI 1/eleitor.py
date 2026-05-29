@@ -5,7 +5,6 @@ from validações import (
     solicitar_cpf,
     solicitar_titulo
 )
-
 from db import (
     inserir_eleitor,
     buscar_por_titulo,
@@ -14,453 +13,218 @@ from db import (
     atualizar_eleitor,
     remover_por_titulo
 )
-
 import secrets
 import string
 
 
-# GERAR CHAVE DE ACESSO
-
 def gerar_chave_acesso(nome):
+    """Gera uma chave de acesso personalizada com base no nome do eleitor.
 
+    Combina as duas primeiras letras do primeiro nome, a inicial do sobrenome
+    e quatro dígitos aleatórios gerados de forma segura.
+
+    Args:
+        nome (str): Nome completo do eleitor, contendo ao menos nome e sobrenome.
+
+    Returns:
+        str: Chave de acesso no formato 'XX Y0000', onde XX são as iniciais do
+             primeiro nome, Y é a inicial do sobrenome e 0000 são dígitos aleatórios.
+
+    Raises:
+        ValueError: Se o nome informado não contiver ao menos duas palavras.
+    """
     partes = nome.strip().split()
-
     if len(partes) < 2:
+        raise ValueError("Digite nome e sobrenome.")
 
-        raise ValueError(
-            "Digite nome "
-            "e sobrenome."
-        )
+    primeira_parte = partes[0][:2].upper()
+    letra_sobrenome = partes[1][0].upper()
+    # Usa secrets para garantir aleatoriedade criptograficamente segura
+    numeros = ''.join(secrets.choice(string.digits) for _ in range(4))
+    return primeira_parte + letra_sobrenome + numeros
 
-    # Monta chave personalizada
-    primeira_parte = (
-        partes[0][:2].upper()
-    )
-
-    letra_sobrenome = (
-        partes[1][0].upper()
-    )
-
-    numeros = ''.join(
-
-        secrets.choice(
-            string.digits
-        )
-
-        for _ in range(4)
-    )
-
-    return (
-        primeira_parte +
-        letra_sobrenome +
-        numeros
-    )
-
-
-# CADASTRAR ELEITOR
 
 def cadastrar_eleitor():
+    """Coleta os dados e realiza o cadastro de um novo eleitor no sistema.
 
-    print(
-        "\n=== CADASTRO "
-        "DE ELEITOR ==="
-    )
+    Solicita nome, CPF, título de eleitor e flag de mesário, gera a chave
+    de acesso automaticamente e persiste o registro no banco. Impede
+    duplicidade verificando CPF e título antes de inserir.
 
-    nome = input(
-        "Digite o nome: "
-    ).strip()
+    Args:
+        Nenhum.
 
+    Returns:
+        None
+    """
+    print("\n=== CADASTRO DE ELEITOR ===")
+
+    nome = input("Digite o nome: ").strip()
     cpf = solicitar_cpf()
-
     titulo = solicitar_titulo()
+    mesario = input("É mesário? (s/n): ").strip().lower()
+    chave = gerar_chave_acesso(nome)
 
-    mesario = input(
-        "É mesário? "
-        "(s/n): "
-    ).strip().lower()
-
-    chave = gerar_chave_acesso(
-        nome
-    )
-
-    # Verifica campos obrigatórios
     if not nome:
-
-        print(
-            "Erro: Todos os "
-            "campos são "
-            "obrigatórios!"
-        )
-
+        print("Erro: Todos os campos são obrigatórios!")
         return
 
-    if mesario not in [
-        "s",
-        "n"
-    ]:
-
-        print(
-            "Erro: Digite "
-            "apenas 's' "
-            "ou 'n'"
-        )
-
+    if mesario not in ["s", "n"]:
+        print("Erro: Digite apenas 's' ou 'n'")
         return
 
-    # Verifica duplicidade
-    if buscar_por_cpf_ou_titulo(
-        cpf,
-        titulo
-    ):
-
-        print(
-            "Erro: Eleitor "
-            "já cadastrado!"
-        )
-
+    # Bloqueia cadastro duplicado por CPF ou título
+    if buscar_por_cpf_ou_titulo(cpf, titulo):
+        print("Erro: Eleitor já cadastrado!")
         return
 
-    mesario_bool = (
-        mesario == "s"
-    )
-
-    sucesso = inserir_eleitor(
-        nome,
-        cpf,
-        titulo,
-        mesario_bool,
-        chave
-    )
+    mesario_bool = mesario == "s"
+    sucesso = inserir_eleitor(nome, cpf, titulo, mesario_bool, chave)
 
     if sucesso:
-
-        print(
-            "Eleitor "
-            "cadastrado "
-            "com sucesso!"
-        )
-
-        print(
-            f"Sua chave "
-            f"de acesso é: "
-            f"{chave}"
-        )
-
-        print(
-            "Guarde essa "
-            "chave com "
-            "segurança!"
-        )
-
+        print("Eleitor cadastrado com sucesso!")
+        print(f"Sua chave de acesso é: {chave}")
+        print("Guarde essa chave com segurança!")
     else:
+        print("Erro ao cadastrar.")
 
-        print(
-            "Erro ao "
-            "cadastrar."
-        )
-
-
-# BUSCAR ELEITOR
 
 def buscar_eleitor():
+    """Busca e exibe os dados de um eleitor a partir do título de eleitor.
 
-    print(
-        "\n=== BUSCAR "
-        "ELEITOR ==="
-    )
+    Solicita o título ao usuário e exibe nome, título, CPF e status de
+    voto caso o eleitor seja encontrado no banco.
 
-    titulo = input(
-        "Digite o título "
-        "do eleitor: "
-    ).strip()
+    Args:
+        Nenhum.
 
-    eleitor = (
-        buscar_por_titulo(
-            titulo
-        )
-    )
+    Returns:
+        None
+    """
+    print("\n=== BUSCAR ELEITOR ===")
+
+    titulo = input("Digite o título do eleitor: ").strip()
+    eleitor = buscar_por_titulo(titulo)
 
     if eleitor:
-
-        print(
-            "\nEleitor "
-            "encontrado:"
-        )
-
-        print(
-            f"Nome: "
-            f"{eleitor['nome_completo']}"
-        )
-
-        print(
-            f"Título: "
-            f"{eleitor['titulo_eleitor']}"
-        )
-
-        print(
-            f"CPF: "
-            f"{eleitor['cpf']}"
-        )
-
-        print(
-            f"Status: "
-            f"{eleitor['status_voto']}"
-        )
-
+        print("\nEleitor encontrado:")
+        print(f"Nome: {eleitor['nome_completo']}")
+        print(f"Título: {eleitor['titulo_eleitor']}")
+        print(f"CPF: {eleitor['cpf']}")
+        print(f"Status: {eleitor['status_voto']}")
     else:
+        print("Eleitor não encontrado.")
 
-        print(
-            "Eleitor não "
-            "encontrado."
-        )
-
-
-# LISTAR ELEITORES
 
 def listar_eleitores():
+    """Lista todos os eleitores cadastrados no sistema.
 
-    print(
-        "\n=== LISTA DE "
-        "ELEITORES ==="
-    )
+    Recupera e exibe nome, título, CPF, flag de mesário e status de voto
+    de cada eleitor registrado. Informa caso não haja registros.
 
-    eleitores = (
-        listar_todos()
-    )
+    Args:
+        Nenhum.
+
+    Returns:
+        None
+    """
+    print("\n=== LISTA DE ELEITORES ===")
+
+    eleitores = listar_todos()
 
     if eleitores:
-
         for e in eleitores:
-
-            print(
-                "\n----------"
-            )
-
-            print(
-                f"Nome: "
-                f"{e['nome_completo']}"
-            )
-
-            print(
-                f"Título: "
-                f"{e['titulo_eleitor']}"
-            )
-
-            print(
-                f"CPF: "
-                f"{e['cpf']}"
-            )
-
-            print(
-                f"Mesário: "
-                f"{'Sim' if e['mesario'] else 'Não'}"
-            )
-
-            print(
-                f"Status: "
-                f"{e['status_voto']}"
-            )
-
+            print("\n----------")
+            print(f"Nome: {e['nome_completo']}")
+            print(f"Título: {e['titulo_eleitor']}")
+            print(f"CPF: {e['cpf']}")
+            print(f"Mesário: {'Sim' if e['mesario'] else 'Não'}")
+            print(f"Status: {e['status_voto']}")
     else:
+        print("Nenhum eleitor cadastrado.")
 
-        print(
-            "Nenhum eleitor "
-            "cadastrado."
-        )
-
-
-# EDITAR ELEITOR
 
 def editar_eleitor():
+    """Edita os dados cadastrais de um eleitor existente.
 
-    print(
-        "\n=== EDITAR "
-        "ELEITOR ==="
-    )
+    Localiza o eleitor pelo título, exibe os valores atuais e permite
+    atualizar nome, CPF e flag de mesário. Campos deixados em branco
+    mantêm o valor original. Valida o novo CPF antes de salvar.
 
-    titulo = input(
-        "Digite o título: "
-    ).strip()
+    Args:
+        Nenhum.
 
-    eleitor = (
-        buscar_por_titulo(
-            titulo
-        )
-    )
+    Returns:
+        None
+    """
+    print("\n=== EDITAR ELEITOR ===")
+
+    titulo = input("Digite o título: ").strip()
+    eleitor = buscar_por_titulo(titulo)
 
     if not eleitor:
-
-        print(
-            "Eleitor não "
-            "encontrado."
-        )
-
+        print("Eleitor não encontrado.")
         return
 
-    print(
-        "\nDeixe em branco "
-        "para manter o "
-        "valor atual.\n"
-    )
+    print("\nDeixe em branco para manter o valor atual.\n")
 
-    novo_nome = input(
-        f"Nome "
-        f"({eleitor['nome_completo']}): "
-    ).strip()
+    novo_nome = input(f"Nome ({eleitor['nome_completo']}): ").strip()
+    novo_cpf = input(f"CPF ({eleitor['cpf']}): ").strip()
+    mesario_atual = 's' if eleitor['mesario'] else 'n'
+    novo_mesario = input(f"É mesário? (s/n) [{mesario_atual}]: ").strip().lower()
 
-    novo_cpf = input(
-        f"CPF "
-        f"({eleitor['cpf']}): "
-    ).strip()
-
-    mesario_atual = (
-        's'
-        if eleitor['mesario']
-        else 'n'
-    )
-
-    novo_mesario = input(
-        f"É mesário? "
-        f"(s/n) "
-        f"[{mesario_atual}]: "
-    ).strip().lower()
-
-    # Valida opção de mesário
-    if novo_mesario and (
-        novo_mesario
-        not in ["s", "n"]
-    ):
-
-        print(
-            "Erro: use "
-            "apenas "
-            "'s' ou 'n'"
-        )
-
+    if novo_mesario and novo_mesario not in ["s", "n"]:
+        print("Erro: use apenas 's' ou 'n'")
         return
 
-    if novo_cpf and not (
-        validar_cpf(
-            novo_cpf
-        )
-    ):
-
-        print(
-            "Erro: CPF "
-            "inválido!"
-        )
-
+    # Valida o CPF apenas se um novo valor foi informado
+    if novo_cpf and not validar_cpf(novo_cpf):
+        print("Erro: CPF inválido!")
         return
 
-    # Mantém dados antigos
-    nome_final = (
-        novo_nome
-        if novo_nome
-        else eleitor[
-            'nome_completo'
-        ]
-    )
+    # Preserva o valor anterior quando o campo for deixado em branco
+    nome_final = novo_nome if novo_nome else eleitor['nome_completo']
+    cpf_final = novo_cpf if novo_cpf else eleitor['cpf']
+    mesario_final = (novo_mesario == "s") if novo_mesario else eleitor['mesario']
 
-    cpf_final = (
-        novo_cpf
-        if novo_cpf
-        else eleitor['cpf']
-    )
-
-    mesario_final = (
-        (novo_mesario == "s")
-        if novo_mesario
-        else eleitor['mesario']
-    )
-
-    sucesso = (
-        atualizar_eleitor(
-            nome_final,
-            cpf_final,
-            mesario_final,
-            titulo
-        )
-    )
+    sucesso = atualizar_eleitor(nome_final, cpf_final, mesario_final, titulo)
 
     if sucesso:
-
-        print(
-            "Eleitor "
-            "atualizado "
-            "com sucesso!"
-        )
-
+        print("Eleitor atualizado com sucesso!")
     else:
+        print("Erro ao atualizar.")
 
-        print(
-            "Erro ao "
-            "atualizar."
-        )
-
-
-# REMOVER ELEITOR
 
 def remover_eleitor():
+    """Remove o cadastro de um eleitor após confirmação do usuário.
 
-    print(
-        "\n=== REMOVER "
-        "ELEITOR ==="
-    )
+    Localiza o eleitor pelo título, exibe o nome para confirmação e
+    realiza a exclusão somente após resposta afirmativa.
 
-    titulo = input(
-        "Digite o título: "
-    ).strip()
+    Args:
+        Nenhum.
 
-    eleitor = (
-        buscar_por_titulo(
-            titulo
-        )
-    )
+    Returns:
+        None
+    """
+    print("\n=== REMOVER ELEITOR ===")
+
+    titulo = input("Digite o título: ").strip()
+    eleitor = buscar_por_titulo(titulo)
 
     if not eleitor:
-
-        print(
-            "Eleitor não "
-            "encontrado."
-        )
-
+        print("Eleitor não encontrado.")
         return
 
-    confirm = input(
-
-        f"Tem certeza que "
-        f"deseja remover "
-        f"{eleitor['nome_completo']}? "
-        f"(s/n): "
-
-    ).lower()
+    confirm = input(f"Tem certeza que deseja remover {eleitor['nome_completo']}? (s/n): ").lower()
 
     if confirm != "s":
-
-        print(
-            "Operação "
-            "cancelada."
-        )
-
+        print("Operação cancelada.")
         return
 
-    sucesso = (
-        remover_por_titulo(
-            titulo
-        )
-    )
+    sucesso = remover_por_titulo(titulo)
 
     if sucesso:
-
-        print(
-            "Eleitor "
-            "removido com "
-            "sucesso!"
-        )
-
+        print("Eleitor removido com sucesso!")
     else:
-
-        print(
-            "Erro ao "
-            "remover."
-        )
+        print("Erro ao remover.")
